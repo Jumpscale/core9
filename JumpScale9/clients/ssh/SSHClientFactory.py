@@ -134,7 +134,7 @@ class SSHClientFactory:
 
             path = j.tools.console.askChoice(
                 paths, "Select ssh key to push (public part only).")
-            keyname = j.sal.fs.getBaseName(path)
+            keyname = j.do.getBaseName(path)
 
         for line in out.splitlines():
             delim = (".ssh/%s" % keyname)

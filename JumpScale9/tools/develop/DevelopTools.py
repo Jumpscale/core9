@@ -31,20 +31,20 @@ class MyFSEventHandler(FileSystemEventHandler):
                         sep_cmds = "jumpscale_core9/shellcmds/"
                         if changedfile.find(sep) != -1:
                             dest0 = changedfile.split(sep)[1]
-                            dest = j.sal.fs.joinPaths(node.prefab.core.dir_paths['LIBDIR'], 'JumpScale', dest0)
+                            dest = j.do.joinPaths(node.prefab.core.dir_paths['LIBDIR'], 'JumpScale', dest0)
                         elif changedfile.find(sep_cmds) != -1:
                             dest0 = changedfile.split(sep_cmds)[1]
-                            dest = j.sal.fs.joinPaths(node.prefab.core.dir_paths['BINDIR'], dest0)
+                            dest = j.do.joinPaths(node.prefab.core.dir_paths['BINDIR'], dest0)
                         elif changedfile.find("/.git/") != -1:
                             return
                         elif changedfile.find("/__pycache__/") != -1:
                             return
-                        elif j.sal.fs.getBaseName(changedfile) in ["InstallTools.py", "ExtraTools.py"]:
-                            base = j.sal.fs.getBaseName(changedfile)
-                            dest = j.sal.fs.joinPaths(node.prefab.core.dir_paths['LIBDIR'], 'JumpScale', base)
+                        elif j.do.getBaseName(changedfile) in ["InstallTools.py", "ExtraTools.py"]:
+                            base = j.do.getBaseName(changedfile)
+                            dest = j.do.joinPaths(node.prefab.core.dir_paths['LIBDIR'], 'JumpScale', base)
                         else:
                             destpart = changedfile.split("jumpscale/", 1)[-1]
-                            dest = j.sal.fs.joinPaths(node.prefab.core.dir_paths['CODEDIR'], destpart)
+                            dest = j.do.joinPaths(node.prefab.core.dir_paths['CODEDIR'], destpart)
                     else:
                         if changedfile.find("/.git/") != -1:
                             return
@@ -52,7 +52,7 @@ class MyFSEventHandler(FileSystemEventHandler):
                             return
                         else:
                             destpart = changedfile.split("code/", 1)[-1]
-                            dest = j.sal.fs.joinPaths(node.prefab.core.dir_paths['CODEDIR'], destpart)
+                            dest = j.do.joinPaths(node.prefab.core.dir_paths['CODEDIR'], destpart)
                     e = ""
                     if action == "copy":
                         print("copy: %s %s:%s" % (changedfile, node, dest))
@@ -282,8 +282,8 @@ class DevelopToolsFactory:
         raise RuntimeError("stop debug here")
         if ask or j.core.db.get("debug.codepaths") is None:
             path = j.dirs.CODEDIR + "/github/jumpscale"
-            if j.sal.fs.exists(path):
-                items = j.sal.fs.listDirsInDir(path)
+            if j.do.exists(path):
+                items = j.do.listDirsInDir(path)
             chosen = j.tools.console.askChoiceMultiple(items)
             j.core.db.set("debug.codepaths", ",".join(chosen))
 
@@ -316,7 +316,7 @@ class DevelopToolsFactory:
                         dest = "root@%s:%s/JumpScale/" % (node.addr, node.prefab.core.dir_paths['LIBDIR'])
                         source2 = source + "/lib/JumpScale/"
 
-                        j.sal.fs.copyDirTree(
+                        j.do.copyDirTree(
                             source2,
                             dest,
                             ignoredir=[
@@ -333,7 +333,7 @@ class DevelopToolsFactory:
                         source2 = source + "/install/InstallTools.py"
                         dest = "root@%s:%s/JumpScale/InstallTools.py" % (node.addr,
                                                                          node.prefab.core.dir_paths['LIBDIR'])
-                        j.sal.fs.copyDirTree(
+                        j.do.copyDirTree(
                             source2,
                             dest,
                             ignoredir=[
@@ -348,7 +348,7 @@ class DevelopToolsFactory:
 
                         source2 = source + "/install/ExtraTools.py"
                         dest = "root@%s:%s/JumpScale/ExtraTools.py" % (node.addr, node.prefab.core.dir_paths['LIBDIR'])
-                        j.sal.fs.copyDirTree(
+                        j.do.copyDirTree(
                             source2,
                             dest,
                             ignoredir=[
@@ -368,7 +368,7 @@ class DevelopToolsFactory:
                             rsyncdelete2 = True
                         else:
                             rsyncdelete2 = rsyncdelete
-                        j.sal.fs.copyDirTree(
+                        j.do.copyDirTree(
                             source,
                             dest,
                             ignoredir=[

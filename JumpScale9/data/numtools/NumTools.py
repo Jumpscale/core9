@@ -137,8 +137,8 @@ class NumTools:
 
     def _initCurrencies(self):
         if self.currencies == {}:
-            path = j.sal.fs.joinPaths("cfg", "currencies.cfg")
-            if j.sal.fs.exists(path):
+            path = j.do.joinPaths("cfg", "currencies.cfg")
+            if j.do.exists(path):
                 ini = j.tools.inifile.open(path)
                 if ini.checkSection("eur"):
                     for cur in list(ini.getSectionAsDict("eur").keys()):

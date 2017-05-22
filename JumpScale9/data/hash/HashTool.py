@@ -17,7 +17,7 @@ class HashTool:
         """
         walk over all files, calculate md5 and of sorted list also calc md5 this is the resulting hash for the dir independant from time and other metadata (appart from path)
         """
-        paths = j.sal.fs.listFilesInDir(
+        paths = j.do.listFilesInDir(
             rootpath, recursive=True, followSymlinks=False)
         if paths == []:
             return "", ""
@@ -30,7 +30,7 @@ class HashTool:
         paths2.sort()
         out = ""
         for path2 in paths2:
-            realpath = j.sal.fs.joinPaths(rootpath, path2)
+            realpath = j.do.joinPaths(rootpath, path2)
             if not j.core.platformtype.myplatform.isWindows or not j.sal.windows.checkFileToIgnore(realpath):
                 #                print "realpath %s %s" % (rootpath,path2)
                 hhash = j.data.hash.md5(realpath)

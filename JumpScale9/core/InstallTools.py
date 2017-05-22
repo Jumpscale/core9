@@ -24,6 +24,7 @@ import re
 # import yaml
 import importlib
 # import fcntl
+import inspect
 
 
 class TimeoutError(RuntimeError, TimeoutError):
@@ -787,24 +788,45 @@ class FSMethods():
         @param filename: string (filename to open for reading )
         @rtype: string representing the file contents
         """
-        with open(filename) as fp:
-            data = fp.read()
-        return data
+        return self.fileGetContents(filename)
 
     def touch(self, path):
         self.writeFile(path, "")
 
     textstrip = j.data.text.strip
 
-    def writeFile(self, path, content, strip=True):
+    # def writeFile(self, filename, contents, strip=True, append=False):
+    #
+    #     self.createDir(self.getDirName(filename))
+    #
+    #     if strip:
+    #         contents = self.textstrip(contents, True)
+    #
+    #     with open(filename, "w") as fo:
+    #         fo.write(contents)
 
-        self.createDir(self.getDirName(path))
-
+    def writeFile(self, filename, contents, append=False, strip=True):
+        """
+        Open a file and write file contents, close file afterwards
+        @param contents: string (file contents to be written)
+        """
+        if (filename is None) or (contents is None):
+            raise TypeError('Passed None parameters in system.fs.writeFile')
+        self.logger.debug('Opened file %s for writing' % filename)
+        if append is False:
+            fp = open(filename, "wb")
+        else:
+            fp = open(filename, "ab")
+        self.logger.debug('Writing contents in file %s' % filename)
         if strip:
-            content = self.textstrip(content, True)
+            contents = self.textstrip(contents, True)
+        if j.data.types.string.check(contents):
+            fp.write(bytes(contents, 'UTF-8'))
+        else:
+            fp.write(contents)
+        # fp.write(contents)
+        fp.close()
 
-        with open(path, "w") as fo:
-            fo.write(content)
 
     def delete(self, path, force=False):
 
@@ -1163,11 +1185,32 @@ class FSMethods():
                 "Specified path: %s is not a Directory in self.listDir" %
                 path)
 
-    def exists(self, path, executor=None):
+    # def exists(self, path, executor=None):
+    #     if executor:
+    #         return executor.exists(path)
+    #     else:
+    #         return os.path.exists(path)
+
+    def exists(self, path, executor=None, followlinks=True):
+        """Check if the specified path exists
+        @param path: string
+        @rtype: boolean (True if path refers to an existing path)
+        """
+        if path is None:
+            raise TypeError('Path is not passed in system.fs.exists')
         if executor:
             return executor.exists(path)
         else:
-            return os.path.exists(path)
+            if os.path.exists(path) or os.path.islink(path):
+                if self.isLink(path) and followlinks:
+                    self.logger.debug('path %s exists' % str(path.encode("utf-8")))
+                    relativelink = self.readLink(path)
+                    newpath = self.joinPaths(self.getParent(path), relativelink)
+                    return self.exists(newpath)
+                else:
+                    return True
+            self.logger.debug('path %s does not exist' % str(path.encode("utf-8")))
+        return False
 
     def pip(self, items, force=False, executor=None):
         """
@@ -1800,6 +1843,123 @@ class FSMethods():
         self._initExtra()
         return self.extra.getWalker(self)
 
+    ### Funtions from SystemFS
+    def getPathOfRunningFunction(self, function):
+        return inspect.getfile(function)
+
+    def fileGetContents(self, filename, encoding="utf-8"):
+        """Read a file and get contents of that file
+        @param filename: string (filename to open for reading )
+        @rtype: string representing the file contents
+        @param encoding utf-8 or ascii
+        """
+        if filename is None:
+            raise TypeError('File name is None in system.fs.fileGetContents')
+        self.logger.debug('Opened file %s for reading' % filename)
+        self.logger.debug('Reading file %s' % filename)
+        with open(filename, encoding=encoding) as fp:
+            data = fp.read()
+        self.logger.debug('File %s is closed after reading' % filename)
+        return data
+
+    def getcwd(self):
+        """get current working directory
+        @rtype: string (current working directory path)
+        """
+        self.logger.debug('Get current working directory')
+        try:
+            return os.getcwd()
+        except Exception as e:
+            raise j.exceptions.RuntimeError(
+                'Failed to get current working directory')
+
+
+    def pathClean(self, path):
+        """
+        goal is to get a equal representation in / & \ in relation to os.sep
+        """
+        path = path.replace("/", os.sep)
+        path = path.replace("//", os.sep)
+        path = path.replace("\\", os.sep)
+        path = path.replace("\\\\", os.sep)
+        # path=self.pathNormalize(path)
+        path = path.strip()
+        return path
+
+    def getTempFileName(self, dir=None, prefix=''):
+        """Generates a temp file for the directory specified
+        @param dir: Directory to generate the temp file
+        @param prefix: string to start the generated name with
+        @rtype: string representing the generated temp file path
+        """
+        if dir is None:
+            return self.joinPaths(j.dirs.TMPDIR, prefix +
+                                      str(j.data.idgenerator.generateRandomInt(0, 1000000000000)) + ".tmp")
+        else:
+            dir = dir or j.dirs.TMPDIR
+            return tempfile.mktemp('', prefix, dir)
+
+    def isAsciiFile(self, filename, checksize=4096):
+        # TODO: let's talk about checksize feature.
+        try:
+            with open(filename, encoding='ascii') as f:
+                f.read()
+                return True
+        except UnicodeDecodeError:
+            return False
+
+    def remove(self, path):
+        """Remove a File
+        @param path: string (File path required to be removed
+        """
+        self.logger.debug('Remove file with path: %s' % path)
+        if len(path) > 0 and path[-1] == os.sep:
+            path = path[:-1]
+        if path is None:
+            raise TypeError(
+                'Not enough parameters passed to system.fs.removeFile: %s' % path)
+        if os.path.islink(path):
+            os.unlink(path)
+        if self.exists(path):
+            try:
+                os.remove(path)
+            except Exception as e:
+                raise j.exceptions.RuntimeError(
+                    "File with path: %s could not be removed\nDetails: %s\n%s" % (path, e, sys.exc_info()[0]))
+            self.logger.debug('Done removing file with path: %s' % path)
+
+    def removeDirTree(self, path, onlyLogWarningOnRemoveError=False):
+        """Recursively delete a directory tree.
+            @param path: the path to be removed
+        """
+        if path is None:
+            raise ValueError('Path is None in system.fs.removeDir')
+        self.logger.debug('Removing directory tree with path: %s' % path)
+        if self.isLink(path):
+            self.remove(path)
+        if self.isFile(path):
+            self.remove(path)
+
+        if(self.exists(path)):
+            if(self.isDir(path)):
+                if onlyLogWarningOnRemoveError:
+                    def errorHandler(shutilFunc, shutilPath, shutilExc_info):
+                        self.logger.debug(
+                            'WARNING: could not remove %s while recursively deleting %s' % (shutilPath, path))
+                    self.logger.debug(
+                        'Trying to remove Directory tree with path: %s (warn on errors)' % path)
+                    shutil.rmtree(path, onerror=errorHandler)
+                else:
+                    self.logger.debug(
+                        'Trying to remove Directory tree with path: %s' % path)
+                    shutil.rmtree(path)
+
+                self.logger.debug(
+                    'Directory tree with path: %s is successfully removed' % path)
+            else:
+                raise ValueError(
+                    "Specified path: %s is not a Directory in system.fs.removeDirTree" % path)
+
 
 class ExecutorMethods():
 
@@ -2026,7 +2186,7 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
     @property
     def mascot(self):
         mascotpath = "%s/.mascot.txt" % os.environ["HOME"]
-        if not j.sal.fs.exists(mascotpath):
+        if not j.do.exists(mascotpath):
             print("env has not been installed properly, please follow init instructions on https://github.com/Jumpscale/developer")
             sys.exit(1)
         return self.readFile(mascotpath)
@@ -2162,8 +2322,8 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
             val = val.replace(
                 "~", os.environ["HOME"]).replace(
                 "//", "/").rstrip("/")
-            if not j.sal.fs.exists(val):
-                j.sal.fs.createDir(val)
+            if not j.do.exists(val):
+                j.do.createDir(val)
             TT["dirs"][key] = val
 
         if counter > 9:
@@ -2187,19 +2347,19 @@ class InstallTools(GitMethods, FSMethods, ExecutorMethods, SSHMethods):
         # print(j.core.state.config)
 
         # COPY the jumpscale commands
-        js9_codedir = j.sal.fs.getParent(
-            j.sal.fs.getParent(
-                j.sal.fs.getDirName(
-                    j.sal.fs.getPathOfRunningFunction(
+        js9_codedir = j.do.getParent(
+            j.do.getParent(
+                j.do.getDirName(
+                    j.do.getPathOfRunningFunction(
                         j.logger.__init__))))
-        cmdsDir = j.sal.fs.joinPaths(js9_codedir, "cmds")
+        cmdsDir = j.do.joinPaths(js9_codedir, "cmds")
 
-        for item in j.sal.fs.listFilesInDir(cmdsDir):
-            j.sal.fs.symlink(
+        for item in j.do.listFilesInDir(cmdsDir):
+            j.do.symlink(
                 item,
                 "/usr/local/bin/%s" %
-                j.sal.fs.getBaseName(item),
-                overwriteTarget=True)
+                j.do.getBaseName(item),
+                delete=True)
 
         self.linkJSCommandsToSystem()
 

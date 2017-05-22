@@ -253,12 +253,12 @@ class ExecutorSSH(ExecutorBase):
         if die:
             content = "set -ex\n%s" % content
 
-        path = j.sal.fs.getTempFileName()
-        path2 = j.sal.fs.getTempFileName()
-        j.sal.fs.writeFile(path, content)
+        path = j.do.getTempFileName()
+        path2 = j.do.getTempFileName()
+        j.do.writeFile(path, content)
 
         sftp = self.sshclient.getSFTP()
-        parent_dir = j.sal.fs.getParent(path2)
+        parent_dir = j.do.getParent(path2)
         try:
             sftp.stat(parent_dir)
         except FileNotFoundError:
@@ -271,7 +271,7 @@ class ExecutorSSH(ExecutorBase):
         if checkok and die:
             out = self.docheckok(content, out)
 
-        j.sal.fs.remove(path)
+        j.do.remove(path)
         sftp.remove(path2)
 
         return rc, out, err
@@ -279,11 +279,11 @@ class ExecutorSSH(ExecutorBase):
     def upload(self, source, dest, dest_prefix="", recursive=True, createdir=True):
 
         if dest_prefix != "":
-            dest = j.sal.fs.joinPaths(dest_prefix, dest)
+            dest = j.do.joinPaths(dest_prefix, dest)
         if dest[0] != "/":
             raise j.exceptions.RuntimeError("need / in beginning of dest path")
         dest = "root@%s:%s" % (self.addr, dest)
-        j.sal.fs.copyDirTree(
+        j.do.copyDirTree(
             source,
             dest,
             keepsymlinks=True,
@@ -301,11 +301,11 @@ class ExecutorSSH(ExecutorBase):
 
     def download(self, source, dest, source_prefix="", recursive=True):
         if source_prefix != "":
-            source = j.sal.fs.joinPaths(source_prefix, source)
+            source = j.do.joinPaths(source_prefix, source)
         if source[0] != "/":
             raise j.exceptions.RuntimeError("need / in beginning of source path")
         source = "root@%s:%s" % (self.addr, source)
-        j.sal.fs.copyDirTree(
+        j.do.copyDirTree(
             source,
             dest,
             keepsymlinks=True,

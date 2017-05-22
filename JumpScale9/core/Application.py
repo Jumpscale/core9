@@ -107,18 +107,18 @@ class Application:
     #     there needs to be a env.sh in that dir
     #     will also empty redis
     #     """
-    #     if not j.sal.fs.exists("env.sh"):
+    #     if not j.do.exists("env.sh"):
     #         raise j.exceptions.RuntimeError(
     #             "Could not find env.sh in current directory, please go to root of jumpscale e.g. /optrw/jumpscale9")
-    #     # C=j.sal.fs.fileGetContents("env.sh")
+    #     # C=j.do.fileGetContents("env.sh")
     #     # C2=""
     #     # for line in C.split("\n"):
     #     #     if line.startswith("export JSBASE"):
     #     #         line="export JSBASE=/optrw/jumpscale9"
     #     #     C2+="%s\n"%line
-    #     # j.sal.fs.fileGetContents("env.sh",C2)
+    #     # j.do.fileGetContents("env.sh",C2)
     #     j.core.db.flushall()
-    #     j.do.installer.writeenv(base=j.sal.fs.getcwd())
+    #     j.do.installer.writeenv(base=j.do.getcwd())
     #     j.core.db.flushall()
 
     @property
@@ -212,9 +212,9 @@ class Application:
 
         # # Write exitcode
         # if self.writeExitcodeOnExit:
-        #     exitcodefilename = j.sal.fs.joinPaths(j.dirs.TMPDIR, 'qapplication.%d.exitcode'%os.getpid())
+        #     exitcodefilename = j.do.joinPaths(j.dirs.TMPDIR, 'qapplication.%d.exitcode'%os.getpid())
         #     j.logger.log("Writing exitcode to %s" % exitcodefilename, 5)
-        #     j.sal.fs.writeFile(exitcodefilename, str(exitcode))
+        #     j.do.writeFile(exitcodefilename, str(exitcode))
 
         # was probably done like this so we dont end up in the _exithandler
         # os._exit(exitcode) Exit to the system with status n, without calling
@@ -255,7 +255,7 @@ class Application:
                                           domain, name, instance)
         else:
             path = '%s/%s__%s.hrd' % (j.dirs.getHrdDir(), name, instance)
-        if not j.sal.fs.exists(path=path):
+        if not j.do.exists(path=path):
             return False
         return True
 

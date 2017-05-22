@@ -19,10 +19,6 @@ function valid () {
   fi
 }
 
-function nothing () {
-    echo  > /dev/null
-}
-
 touch /tmp/lastcommandoutput.txt
 
 source ~/.jsenv.sh

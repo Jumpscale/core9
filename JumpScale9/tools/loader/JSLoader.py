@@ -1,5 +1,5 @@
 from JumpScale9 import j
-# import os
+import os
 import sys
 
 # corepackages = """
@@ -91,6 +91,9 @@ j.dirs = j.core.dirs
 j.errorhandler = j.core.errorhandler
 j.exceptions = j.core.errorhandler.exceptions
 j.events = j.core.events
+j.core.db = j.clients.redis.get4core()
+from JumpScale9.tools.loader.JSLoader import JSLoader
+j.tools.jsloader = JSLoader()
 
 """
 
@@ -132,9 +135,9 @@ class JSLoader():
     def initPath(self):
         path = self._findSitePath() + "/js9.py"
         # print("initpath:%s" % path)
-        j.sal.fs.remove(path)
-        # if not j.sal.fs.exists(path, followlinks=True):
-        j.sal.fs.writeFile(filename=path, contents="from JumpScale9 import j\n", append=False)
+        j.do.remove(path)
+        # if not j.do.exists(path, followlinks=True):
+        j.do.writeFile(filename=path, contents="from JumpScale9 import j\n", append=False)
 
         return path
 
@@ -149,10 +152,11 @@ class JSLoader():
         return rc
 
     def generate(self, path="", out="", moduleList={}, codecompleteOnly=False):
-        # basedir = j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.application.__init__)))
+        # basedir = j.do.getParent(j.do.getDirName(j.do.getPathOfRunningFunction(j.application.__init__)))
+        gigdir = os.environ.get('GIGDIR', '/root/gig')
         if out == "" or out is None:
             if codecompleteOnly:
-                out = "/root/gig/python_libs/js9.py"
+                out = os.path.join(gigdir, "python_libs/js9.py")
             else:
                 out = self.initPath
                 print("* js9 path:%s" % out)
@@ -235,7 +239,7 @@ class JSLoader():
             # print(res2)
 
         content += pystache.render(GEN_END, **jlocations)
-        j.sal.fs.writeFile(out, content)
+        j.do.writeFile(out, content)
 
     def _pip_installed(self):
         "return the list of all installed pip packages"
@@ -246,7 +250,7 @@ class JSLoader():
 
     def findJumpscaleLocationsInFile(self, path):
         res = {}
-        C = j.sal.fs.readFile(path)
+        C = j.do.readFile(path)
         classname = None
         for line in C.split("\n"):
             if line.startswith("class "):
@@ -281,13 +285,13 @@ class JSLoader():
         return as dict
         """
         if path == "":
-            path = j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.application.__init__)))
+            path = j.do.getParent(j.do.getDirName(j.do.getPathOfRunningFunction(j.application.__init__)))
 
         result = moduleList
 
         self.logger.info("findmodules in %s" % path)
 
-        for classfile in j.sal.fs.listFilesInDir(path, True, "*.py"):
+        for classfile in j.do.listFilesInDir(path, True, "*.py"):
             # print(classfile)
             basename = j.do.getBaseName(classfile)
             if basename.startswith("_"):
@@ -309,5 +313,74 @@ class JSLoader():
                     if loc not in result:
                         result[loc] = []
                     result[loc].append((classfile, classname, item, importItems))
-
         return result
+
+    def copyPyLibs(self):
+
+        for item in sys.path:
+            if item.endswith(".zip"):
+                continue
+            if "jumpscale" in item.lower() or "dynload" in item.lower():
+                continue
+            if item.strip() in [".", ""]:
+                continue
+            if item[-1] != "/":
+                item += "/"
+
+            gigdir = os.environ.get('GIGDIR', '/root/gig')
+            mounted_lib = os.path.join(gigdir, 'python_libs')
+
+            if j.do.exists(item, followlinks=True):
+                j.do.copyTree(item,
+                              mounted_lib,
+                              overwriteFiles=True,
+                              ignoredir=['*.egg-info',
+                                         '*.dist-info',
+                                         "*JumpScale*",
+                                         "*Tests*",
+                                         "*tests*"],
+
+                              ignorefiles=['*.egg-info',
+                                           "*.pyc",
+                                           "*.so",
+                                           ],
+                              rsync=True,
+                              recursive=True,
+                              rsyncdelete=False,
+                              createdir=True)
+
+        j.do.writeFile(filename=os.path.join(mounted_lib, "__init__.py"), contents="")
+
+    def generatePlugins(self):
+        moduleList = {}
+        gigdir = os.environ.get('GIGDIR', '/root/gig')
+        mounted_lib_path = os.path.join(gigdir, 'python_libs')
+
+        for name, path in j.application.config['plugins'].items():
+            if j.do.exists(path, followlinks=True):
+                moduleList = self.findModules(path=path, moduleList=moduleList)
+                # link libs to location for hostos
+                j.do.copyTree(path,
+                              os.path.join(mounted_lib_path, name),
+                              overwriteFiles=True,
+                              ignoredir=['*.egg-info',
+                                         '*.dist-info',
+                                         "*JumpScale*",
+                                         "*Tests*",
+                                         "*tests*"],
+
+                              ignorefiles=['*.egg-info',
+                                           "*.pyc",
+                                           "*.so",
+                                           ],
+                              rsync=True,
+                              recursive=True,
+                              rsyncdelete=True,
+                              createdir=True)
+
+        # DO NOT AUTOPIP the deps are now installed while installing the libs
+        j.application.config["system"]["autopip"] = False
+        j.application.config["system"]["debug"] = True
+
+        self.generate(path=path, moduleList=moduleList)
+        self.generate(path=path, moduleList=moduleList, codecompleteOnly=True)

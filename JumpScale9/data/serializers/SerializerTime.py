@@ -1,6 +1,6 @@
 
 import struct
-from js9 import j
+from JumpScale9 import j
 
 
 class SerializerTime:

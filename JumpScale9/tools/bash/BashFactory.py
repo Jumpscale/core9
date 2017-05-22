@@ -1,6 +1,7 @@
 from js9 import j
 import re
 from io import StringIO
+import os
 
 
 class Profile:
@@ -18,7 +19,7 @@ class Profile:
         """
         self.bash = bash
         if profilePath == "":
-            self.pathProfile = j.sal.fs.joinPaths(self.home, ".profile_js")
+            self.pathProfile = j.do.joinPaths(self.home, ".profile_js")
         else:
             self.pathProfile = profilePath
 
@@ -45,6 +46,10 @@ class Profile:
         else:
             _path = set()
         # make sure to add the js bin dir to the path
+        if "SSHKEYNAME" not in self._env:
+            self._env['SSHKEYNAME'] = os.environ.get('SSHKEYNAME', 'id_rsa')
+        if "HOMEDIR" not in self._env:
+            self._env['HOMEDIR'] = os.environ.get('HOMEDIR', os.environ.get('HOME', '/root'))
         _path.add(self.prefab.core.dir_paths['BINDIR'])
 
         for item in _path:
@@ -266,7 +271,7 @@ class Bash:
         if self._profileDefault is None:
             path = ""
             for attempt in [".profile", ".bash_profile"]:
-                ppath = j.sal.fs.joinPaths(self.home, attempt)
+                ppath = j.do.joinPaths(self.home, attempt)
                 if self.prefab.core.file_exists(ppath):
                     path = ppath
             if path == "":

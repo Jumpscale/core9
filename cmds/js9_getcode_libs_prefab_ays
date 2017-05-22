@@ -5,12 +5,14 @@ import sys
 
 print(j.do.mascot)
 
+j.clients.redis.start4core()
+
 for item in ["lib9", "ays9", "prefab9"]:
 
     j.clients.git.pullGitRepo("git@github.com:Jumpscale/%s.git" % item)
     path = "%s/github/jumpscale/%s" % (j.dirs.CODEDIR, item)
     # removes the egg dirs, this to make sure we re-pip, ...
-    for dpath in [item for item in j.sal.fs.listDirsInDir(path) if item.lower().find("egg") != -1]:
+    for dpath in [item for item in j.do.listDirsInDir(path) if item.lower().find("egg") != -1]:
         j.do.delete(dpath)
     j.do.execute("cd %s;sh install.sh" % path)
 

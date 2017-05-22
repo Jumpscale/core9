@@ -224,7 +224,7 @@ class NetTools:
         if j.core.platformtype.myplatform.isUnix:
             nameserverlines = j.tools.code.regex.findAll(
                 "^\s*nameserver\s+(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\s*$",
-                j.sal.fs.fileGetContents('/etc/resolv.conf'))
+                j.do.fileGetContents('/etc/resolv.conf'))
 
             if not nameserverlines:
                 raise j.exceptions.RuntimeError('No nameserver found in /etc/resolv.conf')
@@ -302,12 +302,12 @@ class NetTools:
         """
         if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isESX():
             output = ''
-            if j.sal.fs.exists("/sys/class/net/%s" % interface):
-                output = j.sal.fs.fileGetContents("/sys/class/net/%s/type" % interface)
+            if j.do.exists("/sys/class/net/%s" % interface):
+                output = j.do.fileGetContents("/sys/class/net/%s/type" % interface)
             if output.strip() == "32":
                 return "INFINIBAND"
             else:
-                if j.sal.fs.exists('/proc/net/vlan/%s' % (interface)):
+                if j.do.exists('/proc/net/vlan/%s' % (interface)):
                     return 'VLAN'
                 exitcode, output, err = j.sal.process.execute("which ethtool", False, showout=False)
                 if exitcode != 0:
@@ -376,13 +376,13 @@ class NetTools:
         if j.core.platformtype.myplatform.isLinux:
             # check if its a vlan
             vlanfile = '/proc/net/vlan/%s' % (interface)
-            if j.sal.fs.exists(vlanfile):
+            if j.do.exists(vlanfile):
                 return j.sal.nettools.getVlanTagFromInterface(interface)
             bridgefile = '/sys/class/net/%s/brif/' % (interface)
-            for brif in j.sal.fs.listDirsInDir(bridgefile):
-                brif = j.sal.fs.getBaseName(brif)
+            for brif in j.do.listDirsInDir(bridgefile):
+                brif = j.do.getBaseName(brif)
                 vlanfile = '/proc/net/vlan/%s' % (brif)
-                if j.sal.fs.exists(vlanfile):
+                if j.do.exists(vlanfile):
                     return j.sal.nettools.getVlanTagFromInterface(brif)
             return "0"
         elif j.core.platformtype.myplatform.isSolaris() or j.core.platformtype.myplatform.isWindows:
@@ -397,8 +397,8 @@ class NetTools:
         """
         if j.core.platformtype.myplatform.isLinux:
             vlanfile = '/proc/net/vlan/%s' % (interface)
-            if j.sal.fs.exists(vlanfile):
-                content = j.sal.fs.fileGetContents(vlanfile)
+            if j.do.exists(vlanfile):
+                content = j.do.fileGetContents(vlanfile)
                 match = re.search("^%s\s+VID:\s+(?P<vlantag>\d+)\s+.*$" % (interface), content, re.MULTILINE)
                 if match:
                     return match.group('vlantag')
@@ -559,8 +559,8 @@ class NetTools:
         if interface not in self.getNics():
             raise LookupError("Interface %s not found on the system" % interface)
         if j.core.platformtype.myplatform.isLinux or j.core.platformtype.myplatform.isESX():
-            if j.sal.fs.exists("/sys/class/net"):
-                return j.sal.fs.fileGetContents('/sys/class/net/%s/address' % interface.split('@')[0]).strip()
+            if j.do.exists("/sys/class/net"):
+                return j.do.fileGetContents('/sys/class/net/%s/address' % interface.split('@')[0]).strip()
             else:
                 command = "ifconfig %s | grep HWaddr| awk '{print $5}'" % interface
                 exitcode, output, err = j.sal.process.execute(command, showout=False)
@@ -679,10 +679,10 @@ class NetTools:
     def isNicConnected(self, interface):
         if j.core.platformtype.myplatform.isLinux:
             carrierfile = '/sys/class/net/%s/carrier' % (interface)
-            if not j.sal.fs.exists(carrierfile):
+            if not j.do.exists(carrierfile):
                 return False
             try:
-                return int(j.sal.fs.fileGetContents(carrierfile)) != 0
+                return int(j.do.fileGetContents(carrierfile)) != 0
             except IOError:
                 return False
         elif j.core.platformtype.myplatform.isESX():
@@ -804,7 +804,7 @@ class NetTools:
         or if the target file checksum doesn't match the expected checksum.
         """
 
-        if j.sal.fs.exists(destination_file_path):
+        if j.do.exists(destination_file_path):
 
             if md5_checksum:
 
@@ -813,7 +813,7 @@ class NetTools:
                     return
 
                 # On invalid checksum, delete the local file
-                j.sal.fs.remove(destination_file_path)
+                j.do.remove(destination_file_path)
 
             else:
                 # It exists but no checksum is provided so any existence of the local file suffices.
@@ -845,10 +845,10 @@ class NetTools:
         filename = ''
         if localpath == '-':
             filename = '-'
-        if j.sal.fs.isDir(localpath):
-            filename = j.sal.fs.joinPaths(localpath, j.sal.fs.getBaseName(url))
+        if j.do.isDir(localpath):
+            filename = j.do.joinPaths(localpath, j.do.getBaseName(url))
         else:
-            if j.sal.fs.isDir(j.sal.fs.getDirName(localpath)):
+            if j.do.isDir(j.do.getDirName(localpath)):
                 filename = localpath
             else:
                 raise ValueError('Local path is an invalid path')
@@ -877,7 +877,7 @@ class NetTools:
 
         urlopener = myURLOpener(username, passwd)
 
-        if not j.sal.fs.exists(filename):
+        if not j.do.exists(filename):
             overwrite = True
 
         if overwrite:

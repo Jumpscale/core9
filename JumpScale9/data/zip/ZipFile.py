@@ -37,7 +37,7 @@ class ZipFile:
         if not j.data.types.path.check(path):
             raise ValueError('Provided string %s is not a valid path' % path)
         if mode is ZipFileFactory.READ:
-            if not j.sal.fs.isFile(path):
+            if not j.do.isFile(path):
                 raise ValueError(
                     'Provided path %s is not an existing file' % path)
             if not zipfile.is_zipfile(path):
@@ -84,9 +84,9 @@ class ZipFile:
             dirname = os.path.dirname(f)
             basename = os.path.basename(f)
 
-            outdir = j.sal.fs.joinPaths(destination_path, dirname)
-            j.sal.fs.createDir(outdir)
-            outfile_path = j.sal.fs.joinPaths(outdir, basename)
+            outdir = j.do.joinPaths(destination_path, dirname)
+            j.do.createDir(outdir)
+            outfile_path = j.do.joinPaths(outdir, basename)
 
             # On Windows we get some \ vs / in path issues. Check whether the
             # provided filename works, if not, retry replacing \ with /, and use

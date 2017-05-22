@@ -18,6 +18,7 @@ class State():
     def db(self):
         if self._db is None and j.clients is not None:
             self._db = j.clients.redis.get4core()
+            self._db = None
         return self._db
 
     @property
@@ -49,9 +50,10 @@ class State():
                     self.configSet(key, defval)
                 return defval
             else:
-                raise j.exceptions.Input(
-                    message="could not find config key:%s in executor:%s" %
-                    (key, self), level=1, source="", tags="", msgpub="")
+                return defval
+                # raise j.exceptions.Input(
+                #     message="could not find config key:%s in executor:%s" %
+                #     (key, self), level=1, source="", tags="", msgpub="")
 
     def configSet(self, key, val, save=True):
         """
@@ -70,6 +72,8 @@ class State():
                 self.configSave()
             return True
         else:
+            if save:
+                self.configSave()
             return False
 
     def configUpdate(self, ddict, overwrite=True):
@@ -98,8 +102,8 @@ class State():
             raise j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self, level=1, source="", tags="", msgpub="")
-        if not self._config_changed:
-            return
+        # if not self._config_changed:
+        #     return
         data = pytoml.dumps(self.config, sort_keys=True)
         # self.logger.info("config save")
         self._set("cfg", data)
@@ -117,7 +121,7 @@ class State():
 
     def resetCache(self):
         from IPython import embed
-        print("DEBUG NOW reset ache")
+        print("DEBUG NOW reset cache")
         embed()
         raise RuntimeError("stop debug here")
 
@@ -147,8 +151,8 @@ class State():
             raise RuntimeError("stop debug here")
         else:
             path = self._getpath(cat=cat, key=key)
-            j.sal.fs.createDir(j.sal.fs.getDirName(path))
-            j.sal.fs.writeFile(filename=path, contents=data, append=False)
+            j.do.createDir(j.do.getDirName(path))
+            j.do.writeFile(filename=path, contents=data, append=False)
 
     def _exists(self, cat="cfg", data="", key=None):
         if self.db is not None:

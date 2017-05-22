@@ -16,57 +16,34 @@ import sys
 print(j.do.mascot)
 
 j.do.debug = False
+j.tools.jsloader.generatePlugins()
 
-
-def copyPyLibs():
-    for item in sys.path:
-        if item.endswith(".zip"):
-            continue
-        if "jumpscale" in item.lower() or "dynload" in item.lower():
-            continue
-        if item.strip() in [".", ""]:
-            continue
-        if item[-1] != "/":
-            item += "/"
-
-        if j.sal.fs.exists(item, followlinks=True):
-            j.do.copyTree(item, "/root/gig/python_libs/", overwriteFiles=True, ignoredir=['*.egg-info', '*.dist-info', "*JumpScale*", "*Tests*", "*tests*"],
-                          ignorefiles=['*.egg-info', "*.pyc", "*.so", ], rsync=True, recursive=True, rsyncdelete=False, createdir=True)
-
-    j.sal.fs.writeFile(filename="/root/gig/python_libs/__init__.py", contents="")
-
-    for item in j.sal.fs.listFilesInDir("/root/gig/python_libs/", False, filter="js9*"):
-        j.sal.fs.remove(item)
-    for item in j.sal.fs.listFilesInDir("/root/gig/python_libs/", False, filter="JumpScale*"):
-        j.sal.fs.remove(item)
-
-
-copyPyLibs()
-
-todo = []
-todo.append(("lib9", "JumpScale9Lib"))
-todo.append(("core9", "JumpScale9"))
-todo.append(("ays9", "JumpScale9AYS"))
-todo.append(("prefab9", "JumpScale9Prefab"))
-# todo.append(("portal9", "JumpScale9Portal"))
-
-moduleList = {}
-
-for item, libname in todo:
-    path = "%s/github/jumpscale/%s/%s/" % (j.dirs.CODEDIR, item, libname)
-
-    if j.sal.fs.exists(path, followlinks=True):
-        moduleList = j.tools.jsloader.findModules(path=path, moduleList=moduleList)
-        # link libs to location for hostos
-        # j.sal.fs.symlink(path, "/root/gig/python_libs/%s" % libname, overwriteTarget=True)
-        j.do.copyTree(path, "/root/gig/python_libs/%s" % libname, overwriteFiles=True, ignoredir=['*.egg-info', '*.dist-info', "*JumpScale*", "*Tests*", "*tests*"],
-                      ignorefiles=['*.egg-info', "*.pyc", "*.so", ], rsync=True, recursive=True, rsyncdelete=True, createdir=True)
-
-# DO NOT AUTOPIP the deps are now installed while installing the libs
-# j.application.config["system"]["autopip"] = True
-j.application.config["system"]["debug"] = True
-
-j.tools.jsloader.generate(path=path, moduleList=moduleList)
-j.tools.jsloader.generate(path=path, moduleList=moduleList, codecompleteOnly=True)
-
-j.do.initEnv()
+#
+#
+# todo = []
+# todo.append(("lib9", "JumpScale9Lib"))
+# todo.append(("core9", "JumpScale9"))
+# todo.append(("ays9", "JumpScale9AYS"))
+# todo.append(("prefab9", "JumpScale9Prefab"))
+# # todo.append(("portal9", "JumpScale9Portal"))
+#
+# moduleList = {}
+#
+# for item, libname in todo:
+#     path = "%s/github/jumpscale/%s/%s/" % (j.dirs.CODEDIR, item, libname)
+#
+#     if j.do.exists(path, followlinks=True):
+#         moduleList = j.tools.jsloader.findModules(path=path, moduleList=moduleList)
+#         # link libs to location for hostos
+#         # j.do.symlink(path, "/root/gig/python_libs/%s" % libname, overwriteTarget=True)
+#         j.do.copyTree(path, "/root/gig/python_libs/%s" % libname, overwriteFiles=True, ignoredir=['*.egg-info', '*.dist-info', "*JumpScale*", "*Tests*", "*tests*"],
+#                       ignorefiles=['*.egg-info', "*.pyc", "*.so", ], rsync=True, recursive=True, rsyncdelete=True, createdir=True)
+#
+# # DO NOT AUTOPIP the deps are now installed while installing the libs
+# # j.application.config["system"]["autopip"] = True
+# j.application.config["system"]["debug"] = True
+#
+# j.tools.jsloader.generate(path=path, moduleList=moduleList)
+# j.tools.jsloader.generate(path=path, moduleList=moduleList, codecompleteOnly=True)
+#
+# j.do.initEnv()

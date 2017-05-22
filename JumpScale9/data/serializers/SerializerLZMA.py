@@ -1,6 +1,6 @@
 
 import pylzma
-from SerializerBase import SerializerBase
+from .SerializerBase import SerializerBase
 
 
 class SerializerLZMA(SerializerBase):

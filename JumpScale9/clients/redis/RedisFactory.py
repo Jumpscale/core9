@@ -80,11 +80,11 @@ class RedisFactory:
         elif self._tcpPortConnectionTest("localhost", 6379, timeout=None):
             db = Redis()
 
-        try:
-            j.core.db.set("internal.last", 0)
-            return True
-        except:
-            db = None
+        # try:
+        #     j.core.db.set("internal.last", 0)
+        #     return True
+        # except:
+        #     db = None
 
         return db
 
@@ -127,11 +127,10 @@ class RedisFactory:
             if j.core.platformtype.myplatform.isAlpine:
                 os.system("apk add redis")
             elif j.core.platformtype.myplatform.isUbuntu:
-                os.system("apt install redis")
+                os.system("apt install redis-server -y")
         else:
             raise RuntimeError("platform not supported for start redis")
 
-        j.do.killall("redis")
         # cmd = "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir  # 100MB
         # print("start redis in background (osx)")
         # os.system(cmd)
@@ -148,7 +147,11 @@ class RedisFactory:
         os.system(cmd)
 
         redis_bin = "redis-server"
-        cmd = "%s  --port 0 --unixsocket %s/redis.sock --maxmemory 100000000" % (redis_bin, j.dirs.TMPDIR)
+        if "TMPDIR" in os.environ:
+            tmpdir = os.environ["TMPDIR"]
+        else:
+            tmpdir = "/tmp"
+        cmd = "%s  --port 0 --unixsocket %s/redis.sock --maxmemory 100000000" % (redis_bin, tmpdir)
         print(cmd)
-        print("start redis in tmux (linux)")
-        j.tools.tmux.execute(cmd, session='main', window='main', pane='tmux')
+        j.sal.process.execute(
+            "redis-server --port 6379 --unixsocket %s/redis.sock --maxmemory 100000000 --daemonize yes" % tmpdir)

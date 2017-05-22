@@ -31,6 +31,7 @@ class Jumpscale9():
         self.data = Data()
         self.clients = Clients()
         self.core = Core()
+        self.exceptions = None
 
 
 j = Jumpscale9()
@@ -45,8 +46,6 @@ from .logging.LoggerFactory import LoggerFactory
 j.logger = LoggerFactory()
 j.logger.enableConsoleHandler()
 
-from .fs.SystemFS import SystemFS
-j.sal.fs = SystemFS()
 
 from .sal.process.SystemProcess import SystemProcess
 j.sal.process = SystemProcess()
@@ -93,8 +92,6 @@ j.core.application = Application()
 
 j.logger.set_mode("DEV")
 
-from .fs.SystemFSWalker import SystemFSWalker
-j.sal.fswalker = SystemFSWalker
 
 from .tools.loader.JSLoader import JSLoader
 j.tools.jsloader = JSLoader()
@@ -111,8 +108,17 @@ j.tools.path = PathFactory()
 from .tools.console.Console import Console
 j.tools.console = Console()
 
-j.logger.init()
-j.core.logger = j.logger
-
-j.exceptions = j.core.errorhandler.exceptions
+from JumpScale9.errorhandling import JSExceptions
+j.exceptions = JSExceptions
 # j.events = j.core.events
+
+j.core.logger = j.logger
+logging_cfg = j.application.config.get('logging')
+if logging_cfg:
+    level = logging_cfg.get('level', 'DEBUG')
+    mode = logging_cfg.get('mode', 'DEV')
+    filter_module = logging_cfg.get('filter', [])
+    j.logger.init(mode, level, filter_module)
+else:
+    j.logger.init('DEV', 'DEBUG', ['j.sal.fs', 'j.application'])
+# j.clients.redis.start4core()

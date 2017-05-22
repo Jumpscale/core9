@@ -1,7 +1,7 @@
 
 
 import snappy
-from SerializerBase import SerializerBase
+from .SerializerBase import SerializerBase
 
 
 class SerializerSnappy(SerializerBase):

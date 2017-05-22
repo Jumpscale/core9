@@ -83,7 +83,7 @@ class NodeNas(NodeBase):
             disk.screenname = "ptest%s" % i
             disk.disknr = i + 1
             disk.mountpath = "/tmp/dummyperftest/%s" % i
-            j.sal.fs.createDir(disk.mountpath)
+            j.do.createDir(disk.mountpath)
             disk.node = self
 
     def createLoopDev(self, size, backend_file):

@@ -220,9 +220,9 @@ class ErrorConditionObject(BaseException):
         """
         write errorcondition to filesystem
         """
-        j.sal.fs.createDir(j.sal.fs.joinPaths(
+        j.do.createDir(j.do.joinPaths(
             j.dirs.LOGDIR, "errors", j.application.appname))
-        path = j.sal.fs.joinPaths(j.dirs.LOGDIR, "errors", j.application.appname, "backtrace_%s.log" % (
+        path = j.do.joinPaths(j.dirs.LOGDIR, "errors", j.application.appname, "backtrace_%s.log" % (
             j.data.time.getLocalTimeHRForFilesystem()))
 
         msg = "***ERROR BACKTRACE***\n"
@@ -238,7 +238,7 @@ class ErrorConditionObject(BaseException):
 
         msg += "***END***\n"
 
-        j.sal.fs.writeFile(path, msg)
+        j.do.writeFile(path, msg)
         return path
 
     # def getBacktrace(self,btkis=None,filename0=None,linenr0=None,func0=None):

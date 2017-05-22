@@ -20,10 +20,10 @@ ACTIONS = ('commit', 'push', 'update', 'status', 'list', 'init')
 
 
 def _repo_info(name, accounts):
-    if j.sal.fs.exists("%s/%s" % (j.sal.fs.getcwd(), ".git")):
+    if j.do.exists("%s/%s" % (j.do.getcwd(), ".git")):
         # we are in repo
-        _name = j.sal.fs.getBaseName(j.sal.fs.getcwd())
-        _accounts = j.sal.fs.getBaseName(j.sal.fs.getParent(j.sal.fs.getcwd()))
+        _name = j.do.getBaseName(j.do.getcwd())
+        _accounts = j.do.getBaseName(j.do.getParent(j.do.getcwd()))
         return _name, _accounts
     return name, accounts
 
@@ -47,9 +47,9 @@ def _search_repos(accounts, name, interactive=True):
            StrictHostKeyChecking no
            UserKnownHostsFile=/dev/null
         """
-        path = j.sal.fs.joinPaths(os.environ["HOME"], ".ssh", "config")
-        if not j.sal.fs.exists(path):
-            j.sal.fs.writeFile(path, C)
+        path = j.do.joinPaths(os.environ["HOME"], ".ssh", "config")
+        if not j.do.exists(path):
+            j.do.writeFile(path, C)
     return _repos
 
 

@@ -7,17 +7,17 @@ class GitClient:
     def __init__(self, baseDir, check_path=True):  # NOQA
 
         self._repo = None
-        if not j.sal.fs.exists(path=baseDir):
+        if not j.do.exists(path=baseDir):
             raise j.exceptions.Input("git repo on %s not found." % baseDir)
 
         # split path to find parts
-        baseDir = j.sal.fs.pathClean(baseDir)
+        baseDir = j.do.pathClean(baseDir)
         baseDir = baseDir.replace("\\", "/")  # NOQA
         baseDir = baseDir.rstrip("/")
 
-        while ".git" not in j.sal.fs.listDirsInDir(
+        while ".git" not in j.do.listDirsInDir(
                 baseDir, recursive=False, dirNameOnly=True, findDirectorySymlinks=True):
-            baseDir = j.sal.fs.getParent(baseDir)
+            baseDir = j.do.getParent(baseDir)
 
             if baseDir == "/":
                 break
@@ -41,7 +41,7 @@ class GitClient:
             else:
                 self.type, self.account, self.name = 'github', 'cockpit', 'cockpit'
         else:
-            self.type, self.account, self.name = '', '', j.sal.fs.getBaseName(baseDir)
+            self.type, self.account, self.name = '', '', j.do.getBaseName(baseDir)
 
         self.BASEDIR = baseDir
 
@@ -72,7 +72,7 @@ class GitClient:
         # Load git when we absolutly need it cause it does not work in gevent
         # mode
         if not self._repo:
-            if not j.sal.fs.exists(self.BASEDIR):
+            if not j.do.exists(self.BASEDIR):
                 j.tools.executorLocal.execute(
                     "git config --global http.sslVerify false")
                 self._clone()
@@ -323,12 +323,12 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 '''
-        ignorefilepath = j.sal.fs.joinPaths(self.BASEDIR, '.gitignore')
-        if not j.sal.fs.exists(ignorefilepath):
-            j.sal.fs.writeFile(ignorefilepath, gitignore)
+        ignorefilepath = j.do.joinPaths(self.BASEDIR, '.gitignore')
+        if not j.do.exists(ignorefilepath):
+            j.do.writeFile(ignorefilepath, gitignore)
         else:
             lines = gitignore.splitlines()
-            inn = j.sal.fs.fileGetContents(ignorefilepath)
+            inn = j.do.fileGetContents(ignorefilepath)
             lines = inn.splitlines()
             linesout = []
             for line in lines:
@@ -339,7 +339,7 @@ docs/_build/
                     linesout.append(line)
             out = '\n'.join(linesout)
             if out.strip() != inn.strip():
-                j.sal.fs.writeFile(ignorefilepath, out)
+                j.do.writeFile(ignorefilepath, out)
 
     def describe(self):
         """

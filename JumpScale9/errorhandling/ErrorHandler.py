@@ -1,9 +1,7 @@
 import sys
-import traceback
 import string
 import inspect
 import imp
-from .JSExceptions import *
 import JumpScale9.errorhandling.JSExceptions as JSExceptions
 from .ErrorConditionObject import ErrorConditionObject
 import colored_traceback
@@ -30,6 +28,8 @@ colored_traceback.add_hook(always=True)
 
 #     __repr__ = __str__
 
+class HaltException(Exception):
+    pass
 
 class ErrorHandler:
 
@@ -49,7 +49,7 @@ class ErrorHandler:
     def _registerScrips(self):
         if self._scriptsInRedis is False:
             luapath = "%s/core/errorhandling/eco.lua" % j.dirs.JSLIBDIR
-            lua = j.sal.fs.fileGetContents(luapath)
+            lua = j.do.fileGetContents(luapath)
             self._escalateToRedisFunction = j.core.db.register_script(lua)
             self._scriptsInRedis = True
 
@@ -413,9 +413,9 @@ class ErrorHandler:
                 #j.tools.console.echo("THIS ONLY WORKS WHEN GEDIT IS INSTALLED")
                 editor = findEditorLinux()
             elif j.core.platformtype.myplatform.isWindows:
-                editorPath = j.sal.fs.joinPaths(
+                editorPath = j.do.joinPaths(
                     j.dirs.JSBASEDIR, "apps", "wscite", "scite.exe")
-                if j.sal.fs.exists(editorPath):
+                if j.do.exists(editorPath):
                     editor = editorPath
             tracefile = errorConditionObject.log2filesystem()
             # print "EDITOR FOUND:%s" % editor

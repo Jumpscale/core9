@@ -199,12 +199,12 @@ def tidy(self, path=""):
     if path=="" then start from current path
     """
     if path == "":
-        path = j.sal.fs.getcwd()
-    for item in j.sal.fs.listFilesInDir(path, True, filter="*.md"):
+        path = j.do.getcwd()
+    for item in j.do.listFilesInDir(path, True, filter="*.md"):
         cmd = "cat %s|tidy-markdown" % item
         rc, out, err = j.sal.process.execute(cmd)
         if rc == 0 and len(out.strip()) > 0:
-            j.sal.fs.writeFile(filename=item, contents=out, append=False)
+            j.do.writeFile(filename=item, contents=out, append=False)
 
 ```
 

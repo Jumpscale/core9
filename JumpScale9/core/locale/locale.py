@@ -44,8 +44,8 @@ class Localizer:
 
     def __load(self, tdirs):
         domains = {}
-        for path in j.sal.fs.listFilesInDir(tdirs, filter="*.l"):
-            locale = os.path.splitext(j.sal.fs.getBaseName(path))[0]
+        for path in j.do.listFilesInDir(tdirs, filter="*.l"):
+            locale = os.path.splitext(j.do.getBaseName(path))[0]
             locale = locale.partition("-")[0]  # remove any packaging suffix
             if locale not in domains:
                 domains[locale] = Domain(locale)

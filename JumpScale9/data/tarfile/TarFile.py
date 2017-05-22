@@ -34,7 +34,7 @@ class TarFile:
             raise ValueError('Provided string "%s" is not a valid path' % path)
 
         if mode is TarFileFactory.READ:
-            if not j.sal.fs.isFile(path):
+            if not j.do.isFile(path):
                 raise ValueError('Provided path "%s" is not an existing file' % path)
 
             if not tarfile.is_tarfile(path):
@@ -91,7 +91,7 @@ class TarFile:
         if not j.data.types.path.check(destination_path):
             raise ValueError('Not a valid folder name provided')
 
-        if not j.sal.fs.exists(destination_path):
+        if not j.do.exists(destination_path):
             raise ValueError('Destination folder "%s" does not exist' % destination_path)
 
         members = list()

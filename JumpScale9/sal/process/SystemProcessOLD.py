@@ -972,7 +972,7 @@ def runScript(script, showOutput=False, captureOutput=True, maxSeconds=0,
 
     @see: jumpscale.system.process.run
     '''
-    if not j.sal.fs.isFile(script):
+    if not j.do.isFile(script):
         raise ValueError('Unable to execute %s: not an existing file' % script)
 
     cmdline = '%s -u "%s"' % (sys.executable, script)
@@ -1052,10 +1052,10 @@ def runDaemon(commandline, stdout=None, stderr=None, user=None, group=None,
     cmd.extend(('-c', '\'from JumpScale9AYS.sal.process.processhelper import main; main()\'', ))
 
     if stdout:
-        j.sal.fs.createDir(os.path.dirname(stdout))
+        j.do.createDir(os.path.dirname(stdout))
         cmd.extend(('--stdout', '"%s"' % stdout, ))
     if stderr:
-        j.sal.fs.createDir(os.path.dirname(stderr))
+        j.do.createDir(os.path.dirname(stderr))
         cmd.extend(('--stderr', '"%s"' % stderr, ))
 
     if uid is not None:

@@ -26,7 +26,7 @@ class CythonFactory:
     @property
     def _currentPath(self):
         if self.__path == "":
-            self.__path = j.sal.fs.getDirName(inspect.getsourcefile(self.__init__))
+            self.__path = j.do.getDirName(inspect.getsourcefile(self.__init__))
             sys.path.append(self.__path)
             pyximport.install()
         return self.__path

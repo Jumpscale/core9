@@ -56,11 +56,11 @@ class SystemProcess:
         command = j.data.text.strip(command)
 
         if "\n" in command:
-            path = self.getTmpPath("doexecute_%s.bash" % random.randrange(0, 10000000))
+            path = j.do.getTmpFilePath()
             self.logger.info("execbash:\n'''%s\n%s'''\n" % (path, command))
             if die:
                 command = "set -ex\n%s" % command
-            self.writeFile(path, command + "\n")
+            j.do.writeFile(path, command + "\n")
             command = "bash %s" % path
         else:
             # self.logger.info("exec:%s" % command)
@@ -185,7 +185,7 @@ class SystemProcess:
                     break
 
         if path is not None:
-            self.delete(path)
+            j.do.remove(path)
 
         if rc != 999:
             outReader.join()
@@ -366,7 +366,7 @@ class SystemProcess:
         if scriptName is None:
             raise ValueError('Error, Script name in empty in system.process.executeScript')
         try:
-            script = j.sal.fs.readFile(scriptName)
+            script = j.do.readFile(scriptName)
             scriptc = compile(script, scriptName, 'exec')
             exec(scriptc)
         except Exception as err:
@@ -825,7 +825,7 @@ class SystemProcess:
         return llist
 
     def getEnviron(self, pid):
-        environ = j.sal.fs.fileGetContents('/proc/%s/environ' % pid)
+        environ = j.do.fileGetContents('/proc/%s/environ' % pid)
         env = dict()
         for line in environ.split('\0'):
             if '=' in line:

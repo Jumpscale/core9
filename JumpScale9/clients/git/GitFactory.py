@@ -84,10 +84,10 @@ class GitFactory:
         """
         repository_host, repository_type, repository_account, repository_name, repository_url, branch, gitpath, relpath = j.clients.git.parseUrl(
             url)
-        rpath = j.sal.fs.joinPaths(gitpath, relpath)
-        if not j.sal.fs.exists(rpath, followlinks=True):
+        rpath = j.do.joinPaths(gitpath, relpath)
+        if not j.do.exists(rpath, followlinks=True):
             j.clients.git.pullGitRepo(repository_url, branch=branch)
-        if not j.sal.fs.exists(rpath, followlinks=True):
+        if not j.do.exists(rpath, followlinks=True):
             raise j.exceptions.Input(message="Did not find path in git:%s" %
                                      rpath, level=1, source="", tags="", msgpub="")
 
@@ -106,14 +106,14 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
-        if not j.sal.fs.exists(urlOrPath, followlinks=True):
+        if not j.do.exists(urlOrPath, followlinks=True):
             repository_url, gitpath, relativepath = self.getContentInfoFromURL(urlOrPath)
         else:
             repository_host, repository_type, repository_account, repository_name, repository_url, branch, gitpath, relativepath = j.clients.git.parseUrl(
                 urlOrPath)
             j.clients.git.pullGitRepo(repository_url, branch=branch)  # to make sure we pull the info
 
-        path = j.sal.fs.joinPaths(gitpath, relativepath)
+        path = j.do.joinPaths(gitpath, relativepath)
         return path
 
     def getContentPathFromURLorPath(self, urlOrPath):
@@ -128,11 +128,11 @@ class GitFactory:
         - https://github.com/Jumpscale/jumpscale_core9/tree/master/lib/JumpScale/tools/docgenerator/macros
 
         """
-        if j.sal.fs.exists(urlOrPath, followlinks=True):
+        if j.do.exists(urlOrPath, followlinks=True):
 
             return urlOrPath
         repository_url, gitpath, relativepath = self.getContentInfoFromURL(urlOrPath)
-        path = j.sal.fs.joinPaths(gitpath, relativepath)
+        path = j.do.joinPaths(gitpath, relativepath)
         return path
 
     def get(self, basedir="", check_path=True):
@@ -140,7 +140,7 @@ class GitFactory:
         PLEASE USE SSH, see http://gig.gitbooks.io/jumpscale/content/Howto/how_to_use_git.html for more details
         """
         if basedir == "":
-            basedir = j.sal.fs.getcwd()
+            basedir = j.do.getcwd()
         return GitClient(basedir, check_path=check_path)
 
     def find(self, account=None, name=None, interactive=False, returnGitClient=False):  # NOQA
@@ -192,23 +192,23 @@ class GitFactory:
 
             """
             repos = []
-            for top in j.sal.fs.listDirsInDir(codeDir, recursive=False,
+            for top in j.do.listDirsInDir(codeDir, recursive=False,
                                               dirNameOnly=True, findDirectorySymlinks=True):
-                for account in j.sal.fs.listDirsInDir("%s/%s" % (j.dirs.CODEDIR, top), recursive=False,
+                for account in j.do.listDirsInDir("%s/%s" % (j.dirs.CODEDIR, top), recursive=False,
                                                       dirNameOnly=True, findDirectorySymlinks=True):
                     if checkaccount(account):
                         accountdir = "%s/%s/%s" % (j.dirs.CODEDIR,
                                                    top, account)
-                        if j.sal.fs.exists(path="%s/.git" % accountdir):
+                        if j.do.exists(path="%s/.git" % accountdir):
                             raise j.exceptions.RuntimeError(
                                 "there should be no .git at %s level" % accountdir)
                         else:
-                            for reponame in j.sal.fs.listDirsInDir("%s/%s/%s" % (j.dirs.CODEDIR, top, account),
+                            for reponame in j.do.listDirsInDir("%s/%s/%s" % (j.dirs.CODEDIR, top, account),
                                                                    recursive=False, dirNameOnly=True,
                                                                    findDirectorySymlinks=True):
                                 repodir = "%s/%s/%s/%s" % (
                                     j.dirs.CODEDIR, top, account, reponame)
-                                if j.sal.fs.exists(path="%s/.git" % repodir):
+                                if j.do.exists(path="%s/.git" % repodir):
                                     if name.find("*") != -1:
                                         if name == "*" or reponame.startswith(name.replace("*", "")):
                                             repos.append(
@@ -222,9 +222,9 @@ class GitFactory:
                                             [top, account, reponame, repodir])
             return repos
 
-        j.sal.fs.createDir(j.sal.fs.joinPaths(os.getenv("HOME"), "code"))
+        j.do.createDir(j.do.joinPaths(os.getenv("HOME"), "code"))
         repos = _getRepos(j.dirs.CODEDIR, account, name)
-        repos += _getRepos(j.sal.fs.joinPaths(os.getenv("HOME"),
+        repos += _getRepos(j.do.joinPaths(os.getenv("HOME"),
                                               "code"), account, name)
 
         accounts.sort()
@@ -253,9 +253,9 @@ class GitFactory:
 
     def findGitPath(self, path):
         while path != "":
-            if j.sal.fs.exists(path=j.sal.fs.joinPaths(path, ".git")):
+            if j.do.exists(path=j.do.joinPaths(path, ".git")):
                 return path
-            path = j.sal.fs.getParent(path)
+            path = j.do.getParent(path)
         raise j.exceptions.Input("Cannot find git path in:%s" % path)
 
     def parseGitConfig(self, repopath):
@@ -265,10 +265,10 @@ class GitFactory:
         login will be ssh if ssh is used
         login & passwd is only for https
         """
-        path = j.sal.fs.joinPaths(repopath, ".git", "config")
-        if not j.sal.fs.exists(path=path):
+        path = j.do.joinPaths(repopath, ".git", "config")
+        if not j.do.exists(path=path):
             raise RuntimeError("cannot find %s" % path)
-        config = j.sal.fs.readFile(path)
+        config = j.do.readFile(path)
         state = "start"
         for line in config.split("\n"):
             line2 = line.lower().strip()
@@ -283,19 +283,19 @@ class GitFactory:
 
     def getGitReposListLocal(self, provider="", account="", name="", errorIfNone=True):
         repos = {}
-        for top in j.sal.fs.listDirsInDir(
+        for top in j.do.listDirsInDir(
                 j.dirs.CODEDIR,
                 recursive=False,
                 dirNameOnly=True,
                 findDirectorySymlinks=True):
             if provider != "" and provider != top:
                 continue
-            for accountfound in j.sal.fs.listDirsInDir("%s/%s" % (j.dirs.CODEDIR, top),
+            for accountfound in j.do.listDirsInDir("%s/%s" % (j.dirs.CODEDIR, top),
                                                        recursive=False, dirNameOnly=True, findDirectorySymlinks=True):
                 if account != "" and account != accountfound:
                     continue
                 accountfounddir = "/%s/%s/%s" % (j.dirs.CODEDIR, top, accountfound)
-                for reponame in j.sal.fs.listDirsInDir(
+                for reponame in j.do.listDirsInDir(
                     "%s/%s/%s" %
                     (j.dirs.CODEDIR,
                      top,
@@ -306,7 +306,7 @@ class GitFactory:
                     if name != "" and name != reponame:
                         continue
                     repodir = "%s/%s/%s/%s" % (j.dirs.CODEDIR, top, accountfound, reponame)
-                    if j.sal.fs.exists(path="%s/.git" % repodir):
+                    if j.do.exists(path="%s/.git" % repodir):
                         repos[reponame] = repodir
         if len(list(repos.keys())) == 0:
             raise RuntimeError("Cannot find git repo '%s':'%s':'%s'" % (provider, account, name))
@@ -354,17 +354,17 @@ class GitFactory:
             for reponame, repopath in list(self.getGitReposListLocal(provider, account, name).items()):
                 import re
                 configpath = "%s/.git/config" % repopath
-                text = j.sal.fs.readFile(configpath)
+                text = j.do.readFile(configpath)
                 text2 = text
                 for item in re.findall(re.compile(r'//.*@%s' % provider), text):
                     newitem = "//%s:%s@%s" % (login, passwd, provider)
                     text2 = text.replace(item, newitem)
                 if text2.strip() != text:
-                    j.sal.fs.writeFile(configpath, text2)
+                    j.do.writeFile(configpath, text2)
         else:
             for reponame, repopath in list(self.getGitReposListLocal(provider, account, name).items()):
                 configpath = "%s/.git/config" % repopath
-                text = j.sal.fs.readFile(configpath)
+                text = j.do.readFile(configpath)
                 text2 = ""
                 change = False
                 for line in text.split("\n"):
@@ -386,7 +386,7 @@ class GitFactory:
                     # print text2
                     # print "++++"
                     print(("changed login/passwd/git on %s" % configpath))
-                    j.sal.fs.writeFile(configpath, text2)
+                    j.do.writeFile(configpath, text2)
 
         if pushmessage != "":
             self.pushGitRepos(pushmessage, name=name, update=True, provider=provider, account=account)

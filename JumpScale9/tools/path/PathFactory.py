@@ -2,7 +2,8 @@ from path import Path
 
 
 class PathFactory:
-
+    def __init__(self):
+        self.__jslocation__ = "j.tools.path"
     def get(self, startpath):
         """
         example1:

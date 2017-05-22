@@ -14,6 +14,7 @@ class ExecutorFactory:
 
     def __init__(self):
         self.__jslocation__ = "j.tools.executor"
+        self.__imports__ = "g8core"
 
     def pushkey(self, addr, passwd, keyname="", pubkey="", port=22, login="root"):
         """

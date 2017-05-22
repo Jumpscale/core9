@@ -1,6 +1,6 @@
 
 import blosc
-from SerializerBase import *
+from .SerializerBase import *
 
 
 class SerializerBlosc(SerializerBase):

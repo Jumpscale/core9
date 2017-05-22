@@ -130,9 +130,9 @@ list = no
         # for name,passwd in self.secrets.iteritems():
         #     src="%s/download/%s"%(self.root,passwd)
         #     dest="%s/upload/%s"%(self.root,name)
-        #     j.sal.fs.createDir(src)
-        #     j.sal.fs.createDir(dest)
-        #     # j.sal.fs.symlink(dest, src, overwriteTarget=True)
+        #     j.do.createDir(src)
+        #     j.do.createDir(dest)
+        #     # j.do.symlink(dest, src, overwriteTarget=True)
 
         #     cmd="mount --bind %s %s"%(src,dest)
         #     j.sal.process.execute(cmd)
@@ -162,12 +162,12 @@ list = no
                         destdir = self.rolesdir.joinpath(role, catpath.basename(), relpath)
                         print(("link: %s->%s" % (path, destdir)))
                         path.symlink(destdir)
-                        # j.sal.fs.createDir(destdir)
-                        # for item in j.sal.fs.listFilesInDir(path, recursive=False, exclude=["*.pyc",".roles"], followSymlinks=False, listSymlinks=False):
-                        #     relpath=j.sal.fs.pathRemoveDirPart(item,path)
-                        #     destpathfile=j.sal.fs.joinPaths(destdir,relpath)
-                        #     j.sal.fs.createDir(j.sal.fs.getDirName(destpathfile))
-                        #     j.sal.fs.symlink(item, destpathfile, overwriteTarget=True)
+                        # j.do.createDir(destdir)
+                        # for item in j.do.listFilesInDir(path, recursive=False, exclude=["*.pyc",".roles"], followSymlinks=False, listSymlinks=False):
+                        #     relpath=j.do.pathRemoveDirPart(item,path)
+                        #     destpathfile=j.do.joinPaths(destdir,relpath)
+                        #     j.do.createDir(j.do.getDirName(destpathfile))
+                        #     j.do.symlink(item, destpathfile, overwriteTarget=True)
 
 
 class RsyncClient:
