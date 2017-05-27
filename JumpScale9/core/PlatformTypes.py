@@ -1,6 +1,6 @@
 from JumpScale9 import j
 
-# import sys
+import sys
 import os
 # import re
 
@@ -171,46 +171,45 @@ class PlatformType():
 
     @property
     def osversion(self):
-        self.uname
-        # if self._osversion is None:
-        #     rc, lsbcontent, err = self.executor.prefab.core.run(
-        #         "cat /etc/lsb-release", replaceArgs=False, showout=False, die=False)
-        #     if rc == 0:
-        #         import re
-        #         try:
-        #             self._osname = re.findall(
-        #                 "DISTRIB_ID=(\w+)", lsbcontent)[0].lower()
-        #             self._osversion = re.findall(
-        #                 "DISTRIB_RELEASE=([\w.]+)", lsbcontent)[0].lower()
-        #         except IndexError as e:
-        #             raise RuntimeError("Can't parse /etc/lsb-release")
-        #     else:
+        if self._osversion is None:
+            rc, lsbcontent, err = self.executor.prefab.core.run(
+                "cat /etc/*-release", replaceArgs=False, showout=False, die=False)
+            if rc == 0:
+                import re
+                try:
+                    self._osname = re.findall(
+                        "DISTRIB_ID=(\w+)", lsbcontent)[0].lower()
+                    self._osversion = re.findall(
+                        "DISTRIB_RELEASE=([\w.]+)", lsbcontent)[0].lower()
+                except IndexError as e:
+                    self._osversion = self.uname
+            else:
+                self._osversion = self.uname
         return self._osversion
 
     @property
     def osname(self):
         if self._osname is None:
-            # if sys.platform.lower().find("darwin") != -1:
-            #     self._osname = "darwin"
-            # else:
-            #     pkgman2dist = {
-            #         'pacman': 'arch', 'apt-get': 'ubuntu', 'yum': 'fedora', 'apk': 'alpine'}
-            #     for pkgman, dist in pkgman2dist.items():
-            #         rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False)
-            #         if rc == 0:
-            #             self._osname = pkgman2dist[pkgman]
-            #             break
-            #     else:
-            #         raise j.exceptions.RuntimeError("Couldn't define os name.")
+            if sys.platform.lower().find("darwin") != -1:
+                self._osname = "darwin"
+            else:
+                pkgman2dist = {
+                    'pacman': 'arch', 'apt-get': 'ubuntu', 'yum': 'fedora', 'apk': 'alpine'}
+                for pkgman, dist in pkgman2dist.items():
+                    rc, _, err = self.executor.execute("which %s" % pkgman, showout=False, die=False)
+                    if rc == 0:
+                        self._osname = pkgman2dist[pkgman]
+                        break
+                # if self._osname not in ["darwin"] and not self._osname.startswith("cygwin"):
+                #     # is linux
+                #     if self.exists("/etc/alpine-release"):
+                #         self._osname = "alpine"
+                #         else::
             #
-            # else:
-            self.uname
-            self._osname = self._osname0.lower()
-            # if self._osname not in ["darwin"] and not self._osname.startswith("cygwin"):
-            #     # is linux
-            #     if self.exists("/etc/alpine-release"):
-            #         self._osname = "alpine"
-            #         else:
+                    else:
+                        self.uname
+                        self._osname = self._osname0.lower()
+            #
         return self._osname
 
     def checkMatch(self, match):

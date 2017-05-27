@@ -205,8 +205,7 @@ class SystemFSWalker:
             raise ValueError('Root path for walk should be a folder, {}'.format(root))
 
         # print "ROOT OF WALKER:%s"%root
-
-        j.sal.fs.walker._walkFunctional(
+        SystemFSWalker._walkFunctional(
             root, callbackFunctionFile, callbackFunctionDir, arg, callbackForMatchDir,
             callbackForMatchFile, findDirectorySymlinks=findDirectorySymlinks)
 

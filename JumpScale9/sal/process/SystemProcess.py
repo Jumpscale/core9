@@ -56,11 +56,11 @@ class SystemProcess:
         command = j.data.text.strip(command)
 
         if "\n" in command:
-            path = self.getTmpPath("doexecute_%s.bash" % random.randrange(0, 10000000))
+            path = j.sal.fs.getTmpFilePath()
             self.logger.info("execbash:\n'''%s\n%s'''\n" % (path, command))
             if die:
                 command = "set -ex\n%s" % command
-            self.writeFile(path, command + "\n")
+            j.sal.fs.writeFile(path, command + "\n")
             command = "bash %s" % path
         else:
             # self.logger.info("exec:%s" % command)
@@ -185,7 +185,7 @@ class SystemProcess:
                     break
 
         if path is not None:
-            self.delete(path)
+            j.sal.fs.remove(path)
 
         if rc != 999:
             outReader.join()

@@ -1,5 +1,5 @@
 from JumpScale9 import j
-# import os
+import os
 import sys
 
 # corepackages = """
@@ -150,9 +150,10 @@ class JSLoader():
 
     def generate(self, path="", out="", moduleList={}, codecompleteOnly=False):
         # basedir = j.sal.fs.getParent(j.sal.fs.getDirName(j.sal.fs.getPathOfRunningFunction(j.application.__init__)))
+        gigdir = os.environ.get('GIGDIR', '/root/gig')
         if out == "" or out is None:
             if codecompleteOnly:
-                out = "/root/gig/python_libs/js9.py"
+                out = os.path.join(gigdir, "python_libs/js9.py")
             else:
                 out = self.initPath
                 print("* js9 path:%s" % out)
@@ -196,6 +197,7 @@ class JSLoader():
                 res3["name"] = item
                 importlocation = removeDirPart(classfile)[:-3].replace("//", "/").replace("/", ".")
                 res3["importlocation"] = importlocation
+                print ("**** in path {} generating {} classname {} file {}".format(path, importlocation, classname, classfile))
 
                 try:
                     exec("from %s import %s" % (importlocation, classname))
@@ -309,5 +311,80 @@ class JSLoader():
                     if loc not in result:
                         result[loc] = []
                     result[loc].append((classfile, classname, item, importItems))
-
         return result
+
+
+    def copyPyLibs(self):
+
+        for item in sys.path:
+            if item.endswith(".zip"):
+                continue
+            if "jumpscale" in item.lower() or "dynload" in item.lower():
+                continue
+            if 'home' in sys.path:
+                continue
+            if item.strip() in [".", ""]:
+                continue
+            if item[-1] != "/":
+                item += "/"
+
+            gigdir = os.environ.get('GIGDIR', '/root/gig')
+            mounted_lib = os.path.join(gigdir, 'python_libs')
+
+            if j.sal.fs.exists(item, followlinks=True):
+                j.do.copyTree(item,
+                              mounted_lib,
+                              overwriteFiles=True,
+                              ignoredir=['*.egg-info',
+                                         '*.dist-info',
+                                         "*JumpScale*",
+                                         "*Tests*",
+                                         "*tests*"],
+
+                              ignorefiles=['*.egg-info',
+                                           "*.pyc",
+                                           "*.so",
+                                           ],
+                              rsync=True,
+                              recursive=True,
+                              rsyncdelete=False,
+                              createdir=True)
+
+        j.sal.fs.writeFile(filename=os.path.join(mounted_lib, "__init__.py"), contents="")
+
+    def generatePlugins(self):
+        moduleList = {}
+        gigdir = os.environ.get('GIGDIR', '/root/gig')
+        mounted_lib_path = os.path.join(gigdir, 'python_libs')
+
+        plugins = j.application.config['plugins'] or []
+        for plugin in plugins:
+            print ('***************', plugin)
+            for name, path in plugin.items():
+                if j.sal.fs.exists(path, followlinks=True):
+                    moduleList = self.findModules(path=path, moduleList=moduleList)
+                    # link libs to location for hostos
+                    j.do.copyTree(path,
+                                  os.path.join(mounted_lib_path, name),
+                                  overwriteFiles=True,
+                                  ignoredir=['*.egg-info',
+                                             '*.dist-info',
+                                             "*JumpScale*",
+                                             "*Tests*",
+                                             "*tests*"],
+
+                                  ignorefiles=['*.egg-info',
+                                               "*.pyc",
+                                               "*.so",
+                                               ],
+                                  rsync=True,
+                                  recursive=True,
+                                  rsyncdelete=True,
+                                  createdir=True)
+
+            # DO NOT AUTOPIP the deps are now installed while installing the libs
+            j.application.config["system"]["autopip"] = False
+            j.application.config["system"]["debug"] = True
+
+            self.generate(path=path, moduleList=moduleList)
+            self.generate(path=path, moduleList=moduleList, codecompleteOnly=True)

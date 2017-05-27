@@ -1,21 +1,16 @@
 from JumpScale9 import j
 import logging
-from .JSLogger import JSLogger
-from .Filter import ModuleFilter
 import time
-from colorlog import ColoredFormatter
 import os
-# import sys
-# def embed():
-#     return "embed" in sys.__dict__
-#
-# if not embed():
-#     import logging.handlers
+from colorlog import ColoredFormatter
+from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import MemoryHandler
+from JumpScale9.logging.JSLogger import JSLogger
+from JumpScale9.logging.Filter import ModuleFilter
 
 
 FILE_FORMAT = '%(asctime)s - %(pathname)s:%(lineno)d - %(levelname)-8s - %(message)s'
-CONSOLE_FORMAT = '%(cyan)s[% (asctime)s]%(reset)s - %(filename)-20s: % (lineno)-4d: % (name)-30s '
-CONSOLE_FORMAT += '- % (log_color)s % (levelname) - 8s % (reset)s - %(message)s'
+CONSOLE_FORMAT = '%(cyan)s[%(asctime)s]%(reset)s - %(filename)-20s:%(lineno)-4d:%(name)-30s - %(log_color)s%(levelname)-8s%(reset)s - %(message)s'
 
 # Modes
 PRODUCTION = 0  # use NullHander, let the application configure the logging
@@ -46,7 +41,7 @@ class Handlers():
                 j.sal.fs.createDir("%s/log/" % j.dirs.VARDIR)
             filename = "%s/log/%s.log" % (j.dirs.VARDIR, name)
             formatter = logging.Formatter(FILE_FORMAT)
-            fh = logging.handlers.TimedRotatingFileHandler(
+            fh = TimedRotatingFileHandler(
                 filename, when='D', interval=1, backupCount=7, encoding=None, delay=False, utc=False, atTime=None)
             fh.setLevel(logging.DEBUG)
             fh.setFormatter(formatter)
@@ -82,7 +77,7 @@ class Handlers():
     @property
     def memoryHandler(self):
         if self._memoryHandler is None:
-            self._memoryHandler = logging.handlers.MemoryHandler(capacity=10000)
+            self._memoryHandler = MemoryHandler(capacity=10000)
             self._all.append(self._memoryHandler)
         return self._memoryHandler
 
@@ -98,7 +93,7 @@ class LoggerFactory:
         self.DEV = DEV
         self._quiet = False
 
-        self.logging = logging.getLogger(self.root_logger_name)
+        self.root_logger = logging.getLogger(self.root_logger_name)
 
     def test(self):
 
@@ -130,7 +125,7 @@ class LoggerFactory:
 
     def init(self, mode="DEV", level=10, filter=[]):
         self.set_mode(mode.upper())
-        self.set_level(level)
+        self.set_level(level.upper())
         if filter:
             self.handlers.consoleHandler.addFilter(ModuleFilter(filter))
 
@@ -140,17 +135,15 @@ class LoggerFactory:
         every logger return by this function is a child of the jumpscale root logger 'j'
 
         Usage:
-            self.logging = j.logger.get(__name__)
+            self.root_logger = j.logger.get(__name__)
         in library module always pass __name__ as argument.
-
-
         """
 
         name = name.strip()
         name = name.lower()
 
-        # if len(name)>22:
-        #     name=name[0:22]
+        # if len(name) > 22:
+        #     name = name[-22:]
 
         if not name:
             path, ln, name, info = logging.root.findCaller()
@@ -160,12 +153,13 @@ class LoggerFactory:
         if not name.startswith(self.root_logger_name):
             name = "%s.%s" % (self.root_logger_name, name)
 
-        logger1 = JSLogger(name)
+        logger = logging.getLogger(name)
 
         if enable_only_me:
-            logger1.enable_only_me()
+            logger = JSLogger(name)
+            logger.enable_only_me()
 
-        return logger1
+        return logger
 
     def set_quiet(self, quiet):
         self._quiet = quiet
@@ -191,33 +185,33 @@ class LoggerFactory:
             handler.setLevel(level)
 
     def enableMemHandler(self):
-        self.logging.handlers = []
-        # self.logging.propagate = True
-        self.logging.addHandler(self.handlers.memoryHandler)
+        self.root_logger.handlers = []
+        # self.root_logger.propagate = True
+        self.root_logger.addHandler(self.handlers.memoryHandler)
 
     def enableConsoleHandler(self):
-        self.logging.handlers = []
-        # self.logging.propagate = True
-        self.logging.addHandler(self.handlers.consoleHandler)
+        self.root_logger.handlers = []
+        # self.root_logger.propagate = True
+        self.root_logger.addHandler(self.handlers.consoleHandler)
 
     def enableConsoleMemHandler(self):
-        self.logging.handlers = []
-        # self.logging.propagate = True
-        self.logging.addHandler(self.handlers.memoryHandler)
-        self.logging.addHandler(self.handlers.consoleHandler)
+        self.root_logger.handlers = []
+        # self.root_logger.propagate = True
+        self.root_logger.addHandler(self.handlers.memoryHandler)
+        self.root_logger.addHandler(self.handlers.consoleHandler)
 
     def _enable_production_mode(self):
-        self.logging.handlers = []
-        self.logging.addHandler(logging.NullHandler())
-        # self.logging.propagate = True
+        self.root_logger.handlers = []
+        self.root_logger.addHandler(logging.NullHandler())
+        # self.root_logger.propagate = True
 
     def _enable_dev_mode(self):
         logging.setLoggerClass(JSLogger)
-        self.logging.setLevel(logging.DEBUG)
-        self.logging.propagate = False
+        self.root_logger.setLevel(logging.DEBUG)
+        self.root_logger.propagate = False
         logging.lastResort = None
         self.enableConsoleHandler()
-        # self.logging.addHandler(self.handlers.fileRotateHandler)
+        self.root_logger.addHandler(self.handlers.fileRotateHandler)
 
     def __fileRotateHandler(self, name='jumpscale'):
         if not j.sal.fs.exists("%s/log/" % j.dirs.VARDIR):

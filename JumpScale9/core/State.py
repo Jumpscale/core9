@@ -16,6 +16,7 @@ class State():
 
     @property
     def db(self):
+        return None
         if self._db is None and j.clients is not None:
             self._db = j.clients.redis.get4core()
         return self._db
@@ -70,6 +71,8 @@ class State():
                 self.configSave()
             return True
         else:
+            if save:
+                self.configSave()
             return False
 
     def configUpdate(self, ddict, overwrite=True):
@@ -98,8 +101,8 @@ class State():
             raise j.exceptions.Input(
                 message="cannot write config to '%s', because is readonly" %
                 self, level=1, source="", tags="", msgpub="")
-        if not self._config_changed:
-            return
+        # if not self._config_changed:
+        #     return
         data = pytoml.dumps(self.config, sort_keys=True)
         # self.logger.info("config save")
         self._set("cfg", data)
@@ -117,7 +120,7 @@ class State():
 
     def resetCache(self):
         from IPython import embed
-        print("DEBUG NOW reset ache")
+        print("DEBUG NOW reset cache")
         embed()
         raise RuntimeError("stop debug here")
 

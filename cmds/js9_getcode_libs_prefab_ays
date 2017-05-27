@@ -5,6 +5,8 @@ import sys
 
 print(j.do.mascot)
 
+j.clients.redis.start4core()
+
 for item in ["lib9", "ays9", "prefab9"]:
 
     j.clients.git.pullGitRepo("git@github.com:Jumpscale/%s.git" % item)

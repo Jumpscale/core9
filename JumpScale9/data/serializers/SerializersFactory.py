@@ -127,12 +127,12 @@ class SerializersFactory:
         if type not in self.types:
             if type == "m":
                 from JumpScale9.data.serializers.SerializerMSGPack import SerializerMSGPack
-                j.data.serializer.serializers.msgpack = SerializerMSGPack()
-                self.types[type] = j.data.serializer.serializers.msgpack
+                j.data.serializer.msgpack = SerializerMSGPack()
+                self.types[type] = j.data.serializer.msgpack
             elif type == "c":
                 from JumpScale9.data.serializers.SerializerBlosc import SerializerBlosc
-                j.data.serializer.serializers.blosc = SerializerBlosc()
-                self.types[type] = j.data.serializer.serializers.blosc
+                j.data.serializer.blosc = SerializerBlosc()
+                self.types[type] = j.data.serializer.blosc
 
             elif type == "b":
                 from SerializerBlowfish import SerializerBlowfish
@@ -140,29 +140,29 @@ class SerializersFactory:
 
             elif type == "s":
                 from JumpScale9.data.serializers.SerializerSnappy import SerializerSnappy
-                j.data.serializer.serializers.snappy = SerializerSnappy()
-                self.types[type] = j.data.serializer.serializers.snappy
+                j.data.serializer.snappy = SerializerSnappy()
+                self.types[type] = j.data.serializer.snappy
 
             elif type == "j":
-                j.data.serializer.serializers.json = SerializerUJson()
-                self.types[type] = j.data.serializer.serializers.json
+                self.json = SerializerUJson()
+                self.types[type] = self.json
 
             elif type == "d":
-                j.data.serializer.serializers.dict = SerializerDict()
-                self.types[type] = j.data.serializer.serializers.dict
+                j.data.serializer.dict = SerializerDict()
+                self.types[type] = j.data.serializer.dict
 
             elif type == "l":
                 from JumpScale9.data.serializers.SerializerLZMA import SerializerLZMA
-                j.data.serializer.serializers.lzma = SerializerLZMA()
-                self.types[type] = j.data.serializer.serializers.lzma
+                j.data.serializer.lzma = SerializerLZMA()
+                self.types[type] = j.data.serializer.lzma
 
             elif type == "p":
                 from JumpScale9.data.serializers.SerializerPickle import SerializerPickle
-                j.data.serializer.serializers.pickle = SerializerPickle()
-                self.types[type] = j.data.serializer.serializers.pickle
+                j.data.serializer.pickle = SerializerPickle()
+                self.types[type] = j.data.serializer.pickle
 
             elif type == "6":
-                self.types[type] = j.data.serializer.serializers.base64
+                self.types[type] = j.data.serializer.base64
 
         return self.types[type]
 
@@ -173,14 +173,14 @@ class Serializer:
         self.serializationstr = serializationstr
         self.key = key
         for k in self.serializationstr:
-            j.data.serializer.serializers.getSerializerType(k, self.key)
+            j.data.serializer.getSerializerType(k, self.key)
 
     def dumps(self, val):
         if self.serializationstr == "":
             return val
         for key in self.serializationstr:
             # print "dumps:%s"%key
-            val = j.data.serializer.serializers.types[key].dumps(val)
+            val = j.data.serializer.types[key].dumps(val)
         return val
 
     def loads(self, data):
@@ -189,5 +189,5 @@ class Serializer:
 
         for key in reversed(self.serializationstr):
             # print "loads:%s"%key
-            data = j.data.serializer.serializers.types[key].loads(data)
+            data = j.data.serializer.types[key].loads(data)
         return data

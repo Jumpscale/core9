@@ -1,6 +1,3 @@
-from JumpScale9 import j
-
-
 class ModuleFilter:
     """ModuleFilter filter out given modules"""
 

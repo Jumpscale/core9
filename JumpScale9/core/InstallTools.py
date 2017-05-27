@@ -631,8 +631,8 @@ class GitMethods():
                 checkdir = "%s/.git" % (dest)
                 existsGit = self.exists(
                     checkdir) if not executor else executor.exists(checkdir)
-                if existsGit:
-                    self.delete(checkdir)
+                # if existsGit:
+                #     self.delete(checkdir)
                 return self.pullGitRepo(
                     url,
                     dest,
@@ -670,7 +670,6 @@ class GitMethods():
             else:  # if we can't retreive current branch, use master as default
                 branchFound = 'master'
                 # raise RuntimeError("Cannot retrieve branch:\n%s\n" % cmd)
-
             if branch is not None and branch != branchFound and ignorelocalchanges is False:
                 raise RuntimeError(
                     "Cannot pull repo, branch on filesystem is not same as branch asked for.\nBranch asked for:%s\nBranch found:%s\nTo choose other branch do e.g:\nexport JSBRANCH='%s'\n" %

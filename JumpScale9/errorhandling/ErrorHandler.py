@@ -1,9 +1,7 @@
 import sys
-import traceback
 import string
 import inspect
 import imp
-from .JSExceptions import *
 import JumpScale9.errorhandling.JSExceptions as JSExceptions
 from .ErrorConditionObject import ErrorConditionObject
 import colored_traceback
@@ -30,6 +28,8 @@ colored_traceback.add_hook(always=True)
 
 #     __repr__ = __str__
 
+class HaltException(Exception):
+    pass
 
 class ErrorHandler:
 
