@@ -14,6 +14,14 @@ class State():
         self.config = None
 
     @property
+    def versions(self):
+        versions = {}
+        for name, path in self.config.get('plugins', {}).items():
+            repo = j.clients.git.get(path)
+            _, versions[name] = repo.getBranchOrTag()
+        return versions
+
+    @property
     def db(self):
         return None
         if self._db is None and j.clients is not None:
