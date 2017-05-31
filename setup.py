@@ -67,6 +67,7 @@ setup(
         'developement': develop
     },
     scripts=[
+        'cmds/js9',
         'cmds/js9_code',
         'cmds/js9_docker',
         'cmds/js9_docs',
