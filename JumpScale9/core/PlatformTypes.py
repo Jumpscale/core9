@@ -172,7 +172,7 @@ class PlatformType():
     @property
     def osversion(self):
         if self._osversion is None:
-            rc, lsbcontent, err = self.executor.prefab.core.run(
+            rc, lsbcontent, err = self.executor.get_prefab().core.run(
                 "cat /etc/*-release", replaceArgs=False, showout=False, die=False)
             if rc == 0:
                 import re

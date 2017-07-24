@@ -52,7 +52,7 @@ class ExecutorSSH(ExecutorBase):
         rc, out, err = self.execute("ifconfig", showout=False)
 
         def checkOK(nic):
-            excl = ["dummy", "docker", "lxc", "mie", "veth", "vir", "vnet", "zt", "vms", "weave", "ovs"]
+            excl = ["dummy", "docker", "lxc", "veth", "vir", "vnet", "zt", "vms", "weave", "ovs"]
             check = True
             for item in excl:
                 if nic.startswith(item):
