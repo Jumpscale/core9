@@ -165,8 +165,7 @@ class ExecutorBase:
 
         return cmds
 
-    @property
-    def prefab(self):
+    def get_prefab(self):
         if self._prefab is None:
             from js9 import j
             self._prefab = j.tools.prefab.get(self)

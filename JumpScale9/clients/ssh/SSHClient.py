@@ -333,7 +333,7 @@ class SSHClient:
     def prefab(self):
         if not self.usesproxy and self._prefab is None:
             executor = j.tools.executor.getSSHBased(self.addr, self.port, self.login, self.passwd)
-            self._prefab = executor.prefab
+            self._prefab = executor.get_prefab()
         if self.usesproxy:
             ex = j.tools.executor.getSSHViaProxy(self.host)
             self._prefab = j.tools.prefab.get(self)

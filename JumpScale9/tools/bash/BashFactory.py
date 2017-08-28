@@ -224,7 +224,7 @@ class Bash:
         else:
             self.executor = j.tools.executorLocal
 
-        self.prefab = self.executor.prefab
+        self.prefab = self.executor.get_prefab()
         self.reset()
 
     def reset(self):
@@ -237,7 +237,7 @@ class Bash:
 
     @property
     def home(self):
-        return self.executor.prefab.core.dir_paths["HOMEDIR"]
+        return self.executor.get_prefab().core.dir_paths["HOMEDIR"]
 
     def cmdGetPath(self, cmd, die=True):
         """
