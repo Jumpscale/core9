@@ -29,9 +29,9 @@ class State():
             if self.executor.exists(self.configPath):
                 # print("config load state ssh: %s"%self.configPath)
                 cc = self.executor.file_read(self.configPath)
-                self.config = pytoml.loads(cc)                
+                self.config = pytoml.loads(cc)
             else:
-                self.config = {}            
+                self.config = {}
 
     @property
     def versions(self):
@@ -184,11 +184,12 @@ class State():
         else:
             print("configsave state")
             data = pytoml.dumps(self.config)
-            self.executor.file_write(self.configPath, data)
+            if not self.executor.authorizing:
+                self.executor.file_write(self.configPath, data)
 
     def reset(self):
         self.config = {}
-        self.configSave()        
+        self.configSave()
 
     def __repr__(self):
         return str(self.config)
