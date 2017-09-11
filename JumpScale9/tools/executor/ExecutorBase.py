@@ -27,6 +27,7 @@ class ExecutorBase:
         self._logger = None
         self._iscontainer=None
         self._state=None
+        self.authorizing = False
 
     @property
     def state(self):
@@ -234,7 +235,6 @@ class ExecutorBase:
         """
         init the environment of an executor
         """
-
         self.reset()
 
         T=self._getDirPathConfig()
@@ -309,7 +309,7 @@ class ExecutorBase:
             self.state.configUpdate(TT, False)  # will not overwrite
 
         for key, val in DIRPATHS.items():
-            if not self.exists(val):
+            if not self.exists(val) and not self.authorizing:
                 self.execute("mkdir -p %s"%val)
 
         # if DIRPATHS["HOSTCFGDIR"]!="":
