@@ -30,8 +30,6 @@ class TimeoutError(RuntimeError, TimeoutError):
     pass
 
 
-
-
 class FSMethods():
 
     def getPythonLibSystem(self, jumpscale=False):
@@ -207,7 +205,8 @@ class FSMethods():
             if executor is not None:
                 rc, out, err = executor.execute(cmd, showout=False)
             else:
-                rc, out, err = self.execute(cmd, showout=False, outputStderr=False)
+                rc, out, err = self.execute(
+                    cmd, showout=False, outputStderr=False)
             # print(rc)
             # print(out)
             return
@@ -334,7 +333,6 @@ class FSMethods():
     def createDir(self, path):
         if not os.path.exists(path) and not os.path.islink(path):
             os.makedirs(path)
-
 
     def isDir(self, path, followSoftlink=False):
         """Check if the specified Directory path exists
@@ -574,7 +572,6 @@ class FSMethods():
                 'Failed to read link with path: %s \nERROR: %s' %
                 (path, str(e)))
 
-
     def _listInDir(self, path, followSymlinks=True):
         """returns array with dirs & files in directory
         @param path: string (Directory path to list contents under)
@@ -790,8 +787,6 @@ class FSMethods():
 
         return filesreturn, depth
 
-
-
     # def expandTarGz(
     #         self,
     #         path,
@@ -905,7 +900,6 @@ class FSMethods():
 
     def getTmpPath(self, filename):
         return "%s/jumpscaleinstall/%s" % ('/tmp', filename)
-
 
     # def getWalker(self):
     #     self._initExtra()
@@ -1080,27 +1074,22 @@ class InstallTools(ExecutorMethods, FSMethods):
         self._deps = None
         self._config = None
 
-        self.debug=False
+        self.debug = False
 
         self.platformtype = j.core.platformtype
 
         self.logger = j.logger.get("installtools")
 
-
     # def linkJSCommandsToSystem(self):
     #     src = "%s/github/jumpscale/core9/cmds/" % j.core.state.config["dirs"]["CODEDIR"]
     #     self.symlinkFilesInDir(src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
-
 
     @property
     def mascot(self):
         mascotpath = "%s/.mascot.txt" % os.environ["HOME"]
         if not j.sal.fs.exists(mascotpath):
-            print("env has not been installed properly (missing mascot), please follow init instructions on https://github.com/Jumpscale/core9")
-            sys.exit(1)
+            return ""
         return self.readFile(mascotpath)
-
-
 
     @property
     def epoch(self):
