@@ -6,7 +6,7 @@ import struct
 from collections import namedtuple
 import psutil
 
-WhoAmI = namedtuple('WhoAmI', 'gid nid pid')
+WhoAmI = namedtuple('WhoAmI', 'pid')
 
 
 class Application:
@@ -20,9 +20,7 @@ class Application:
         self.state = "UNKNOWN"
         self.appname = 'UNKNOWN'
 
-        self._debug = j.core.state.config["system"]["debug"]
-
-        self.config = j.core.state.config
+        self._debug = j.core.config["system"]["debug"]
 
         self._systempid = None
         self._whoAmIBytestr = None
@@ -136,10 +134,9 @@ class Application:
         return self._systempid
 
     def _initWhoAmI(self):
-        self._whoAmi = WhoAmI(gid=int(self.config['grid']["gid"]), nid=int(
-            self.config['grid']["nid"]), pid=self.systempid)
+        self._whoAmi = WhoAmI(pid=self.systempid)
         self._whoAmIBytestr = struct.pack(
-            "<IHH", self.whoAmI.pid, self.whoAmI.nid, self.whoAmI.gid)
+            "<IHH", self.whoAmI.pid)
 
     def getWhoAmiStr(self):
         return "_".join([str(item) for item in self.whoAmI])
@@ -255,20 +252,20 @@ class Application:
             return False
         return True
 
-    def getAppInstanceHRD(
-            self,
-            name,
-            instance,
-            domain="jumpscale",
-            parent=None):
-        """
-        returns hrd for specific domain,name and & instance name
-        """
-        return j.application.config
-        # TODO: fix
-        service = j.atyourservice.server.getService(
-            domain=domain, name=name, instance=instance)
-        return service.hrd
+    # def getAppInstanceHRD(
+    #         self,
+    #         name,
+    #         instance,
+    #         domain="jumpscale",
+    #         parent=None):
+    #     """
+    #     returns hrd for specific domain,name and & instance name
+    #     """
+    #     return j.application.config
+    #     # TODO: fix
+    #     service = j.atyourservice.server.getService(
+    #         domain=domain, name=name, instance=instance)
+    #     return service.hrd
 
     def getAppInstanceHRDs(self, name, domain="jumpscale"):
         """
@@ -386,40 +383,40 @@ class Application:
 
         return pids
 
-    def getUniqueMachineId(self):
-        """
-        will look for network interface and return a hash calculated from lowest mac address from all physical nics
-        """
-        # if unique machine id is set in grid.hrd, then return it
-        uniquekey = 'node.machineguid'
-        if j.application.config.jumpscale['system']['grid'].get(
-                uniquekey, False):
-            machineguid = j.application.config.jumpscale['system']['grid'].get(
-                uniquekey)
-            if machineguid.strip():
-                return machineguid
+    # def getUniqueMachineId(self):
+    #     """
+    #     will look for network interface and return a hash calculated from lowest mac address from all physical nics
+    #     """
+    #     # if unique machine id is set in grid.hrd, then return it
+    #     uniquekey = 'node.machineguid'
+    #     if j.application.config.jumpscale['system']['grid'].get(
+    #             uniquekey, False):
+    #         machineguid = j.application.config.jumpscale['system']['grid'].get(
+    #             uniquekey)
+    #         if machineguid.strip():
+    #             return machineguid
 
-        nics = j.sal.nettools.getNics()
-        if j.core.platformtype.myplatform.isWindows:
-            order = ["local area", "wifi"]
-            for item in order:
-                for nic in nics:
-                    if nic.lower().find(item) != -1:
-                        return j.sal.nettools.getMacAddress(nic)
-        macaddr = []
-        for nic in nics:
-            if nic.find("lo") == -1:
-                nicmac = j.sal.nettools.getMacAddress(nic)
-                macaddr.append(nicmac.replace(":", ""))
-        macaddr.sort()
-        if len(macaddr) < 1:
-            raise j.exceptions.RuntimeError(
-                "Cannot find macaddress of nics in machine.")
+    #     nics = j.sal.nettools.getNics()
+    #     if j.core.platformtype.myplatform.isWindows:
+    #         order = ["local area", "wifi"]
+    #         for item in order:
+    #             for nic in nics:
+    #                 if nic.lower().find(item) != -1:
+    #                     return j.sal.nettools.getMacAddress(nic)
+    #     macaddr = []
+    #     for nic in nics:
+    #         if nic.find("lo") == -1:
+    #             nicmac = j.sal.nettools.getMacAddress(nic)
+    #             macaddr.append(nicmac.replace(":", ""))
+    #     macaddr.sort()
+    #     if len(macaddr) < 1:
+    #         raise j.exceptions.RuntimeError(
+    #             "Cannot find macaddress of nics in machine.")
 
-        if j.application.config.jumpscale['system']['grid'].get(
-                uniquekey, False):
-            j.application.config.jumpscale['system']['grid'][uniquekey] = macaddr[0]
-        return macaddr[0]
+    #     if j.application.config.jumpscale['system']['grid'].get(
+    #             uniquekey, False):
+    #         j.application.config.jumpscale['system']['grid'][uniquekey] = macaddr[0]
+    #     return macaddr[0]
 
     def _setWriteExitcodeOnExit(self, value):
         if not j.data.types.bool.check(value):

@@ -31,7 +31,7 @@ class Dirs:
         Set the values of JumpScale directory paths values
         """
 
-        for key, val in j.core.state.config["dirs"].items():
+        for key, val in j.core.config["dirs"].items():
             self.__dict__[key] = val
             os.environ[key] = val
 

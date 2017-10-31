@@ -37,7 +37,8 @@ class ExecutorBase:
         if self._state is None:
             from JumpScale9.core.State import State
             self._state = State(self)
-            self.config = self.state.config
+            if self.state.config:
+                self.config = self.state.config['config']
         return self._state
 
     @property
@@ -359,17 +360,13 @@ class ExecutorBase:
 
         TSYSTEM = '''
 
-        [system]
+        [config.system]
         debug = true
         autopip = false
         readonly = false
         container = false
 
-        [grid]
-        gid = 0
-        nid = 0
-
-        [redis]
+        [config.redis]
         enabled = false
         port = 6379
         addr = "localhost"
@@ -379,19 +376,19 @@ class ExecutorBase:
         TSYSTEM = j.data.text.strip(TSYSTEM)
         TT = pytoml.loads(TSYSTEM)
 
-        TT["dirs"] = DIRPATHS
+        TT["config"]["dirs"] = DIRPATHS
 
         # need to see if this works everywhere but think so
-        TT["dirs"]["TMPDIR"] = "/tmp"
+        TT["config"]["dirs"]["TMPDIR"] = "/tmp"
 
-        TT["system"]["container"] = self.stateOnSystem["iscontainer"]
+        TT['config']["system"]["container"] = self.stateOnSystem["iscontainer"]
 
         if self.exists("%s/github/jumpscale/core9/" % DIRPATHS["CODEDIR"]):
             if "plugins" not in TT.keys():
                 TT["plugins"] = {
                     "JumpScale9": "%s/github/jumpscale/core9/JumpScale9/" % DIRPATHS["CODEDIR"]}
 
-        if TT["system"]["container"] == True:
+        if TT['config']["system"]["container"] == True:
             self.state.configUpdate(TT, True)  # will overwrite
         else:
             self.state.configUpdate(TT, False)  # will not overwrite
@@ -430,8 +427,8 @@ class ExecutorBase:
             self.execute(out)
 
         if self.type == "local":
-            src = "%s/github/jumpscale/core9/cmds/" % j.core.state.config["dirs"]["CODEDIR"]
-            j.sal.fs.symlinkFilesInDir(
+            src = "%s/github/jumpscale/core9/cmds/" % j.core.state.config['config']["dirs"]["CODEDIR"]
+            j.do.symlinkFilesInDir(
                 src, "/usr/local/bin", delete=True, includeDirs=False, makeExecutable=True)
 
         print("initenv done on executor base")
@@ -442,7 +439,7 @@ class ExecutorBase:
             self.config = self.state.config
             if "dirs" not in self.config:
                 self.initEnv()
-        return self.config["dirs"]
+        return self.config['config']["dirs"]
 
     @property
     def platformtype(self):

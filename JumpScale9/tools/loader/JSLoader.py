@@ -240,7 +240,7 @@ class JSLoader():
 
 
         moduleList={}
-        for name, path in j.application.config['plugins'].items():
+        for name, path in j.core.sate.config['plugins'].items():
             print("find modules in jumpscale for : '%s'"%path)
             if j.sal.fs.exists(path, followlinks=True):
                 moduleList = self.findModules(path=path,moduleList=moduleList)
@@ -439,7 +439,7 @@ class JSLoader():
             autocompletepath=os.path.join(j.dirs.HOSTDIR,"autocomplete")
             j.sal.fs.createDir(autocompletepath)
 
-        for name, path in j.application.config['plugins'].items():
+        for name, path in j.core.state.config['plugins'].items():
             if j.sal.fs.exists(path, followlinks=True):
                 # link libs to location for hostos
                 j.sal.fs.copyDirTree(path,
@@ -464,7 +464,7 @@ class JSLoader():
         j.sal.fs.touch( os.path.join(j.dirs.HOSTDIR, 'autocomplete',"__init__.py"))
 
         # DO NOT AUTOPIP the deps are now installed while installing the libs
-        j.application.config["system"]["autopip"] = False
+        j.core.config["system"]["autopip"] = False
         # j.application.config["system"]["debug"] = True
 
         self._generate()
