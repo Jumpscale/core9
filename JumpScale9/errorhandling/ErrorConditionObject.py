@@ -61,7 +61,7 @@ class ErrorConditionObject(BaseException):
             self.appname = j.application.appname  # name as used by application
             # if hasattr(j, 'core') and hasattr(j.core, 'grid') and hasattr(j.core.grid, 'aid'):
             #     self.aid = j.core.grid.aid
-            self.pid = j.application.whoAmI.pid
+            self.pid = j.application.systempid
             self.jid = 0
             self.masterjid = 0
 

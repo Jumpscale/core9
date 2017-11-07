@@ -18,9 +18,6 @@ class BaseJSException(Exception):
         self.codetrace = True
         self._tags_add = tags
         self.msgpub = msgpub
-        self.whoami = j.application.getWhoAmiStr()
-        if self.whoami == "0_0_0":
-            self.whoami = ""
 
     @property
     def tags(self):

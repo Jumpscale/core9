@@ -59,10 +59,8 @@ class Dirs:
         txt = txt.replace("$TMPDIR", self.TMPDIR)
         txt = txt.replace("$JSLIBDIR", self.JSLIBDIR)
         txt = txt.replace("$JSAPPSDIR", self.JSAPPSDIR)
-        # txt = txt.replace("$jslibextdir", self.JSLIBEXTDIR)
-        # txt = txt.replace("$jsbindir", self.BINDIR)
-        # txt = txt.replace("$nodeid", str(j.application.whoAmI.nid))
-        for key, value in list(additional_args.items()):
+
+        for key, value in list(additionalArgs.items()):
             txt = txt.replace("$%s" % key, str(value))
         return txt
 

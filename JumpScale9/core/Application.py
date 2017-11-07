@@ -6,9 +6,6 @@ import struct
 from collections import namedtuple
 import psutil
 
-WhoAmI = namedtuple('WhoAmI', 'pid')
-
-
 class Application:
 
     def __init__(self):
@@ -23,7 +20,6 @@ class Application:
         self._debug = j.core.state.configGetFromDict('system', 'debug')
 
         self._systempid = None
-        self._whoAmi = None
 
         self.interactive = True
         self._fixlocale = False
@@ -66,73 +62,19 @@ class Application:
         if 'C.UTF-8' not in out:
             raise j.exceptions.RuntimeError(
                 "Cannot find C.UTF-8 in locale -a, cannot continue.")
-        # 'LANG': 'en_GB.UTF-8'
-        # os.environ["LC_ALL"]='C.UTF-8''
-        # TERMINFO
-        # export TERM=linux
-        # export TERMINFO=/etc/terminfo
         from IPython import embed
         print("DEBUG NOW fix locale in application")
         embed()
 
     def init(self):
-
-        # if not embed() and self.config.jumpscale is not None:
-        #     logging_cfg = self.config.jumpscale.get('logging')
-        #     if not logging_cfg:
-        #         # auto recover logging settings
-        #         j.do.installer._writeLoggingEnv(j.dirs.JSCFGDIR)
-        #         logging_cfg = self.config.jumpscale.get('logging')
-        #     level = logging_cfg.get('level', 'DEBUG')
-        #     mode = logging_cfg.get('mode', 'DEV')
-        #     filter_module = logging_cfg.get('filter', [])
-        #     j.logger.init(mode, level, filter_module)
-        # else:
-        #     j.logger.init("DEV", "INFO", [])
-
         if self._fixlocale:
             self.fixlocale()
-
-    # def useCurrentDirAsHome(self):
-    #     """
-    #     use current directory as home for JumpScale
-    #     e.g. /optrw/jumpscale9
-    #     there needs to be a env.sh in that dir
-    #     will also empty redis
-    #     """
-    #     if not j.sal.fs.exists("env.sh"):
-    #         raise j.exceptions.RuntimeError(
-    #             "Could not find env.sh in current directory, please go to root of jumpscale e.g. /optrw/jumpscale9")
-    #     # C=j.sal.fs.fileGetContents("env.sh")
-    #     # C2=""
-    #     # for line in C.split("\n"):
-    #     #     if line.startswith("export JSBASE"):
-    #     #         line="export JSBASE=/optrw/jumpscale9"
-    #     #     C2+="%s\n"%line
-    #     # j.sal.fs.fileGetContents("env.sh",C2)
-    #     j.core.db.flushall()
-    #     j.do.installer.writeenv(base=j.sal.fs.getcwd())
-    #     j.core.db.flushall()
-
-
-    @property
-    def whoAmI(self):
-        if self._whoAmi is None:
-            self._initWhoAmI()
-        return self._whoAmi
 
     @property
     def systempid(self):
         if self._systempid is None:
             self._systempid = os.getpid()
         return self._systempid
-
-    def _initWhoAmI(self):
-        self._whoAmi = WhoAmI(pid=self.systempid)
-
-
-    def getWhoAmiStr(self):
-        return "_".join([str(item) for item in self.whoAmI])
 
     def start(self, name=None):
         '''Start the application
@@ -153,22 +95,9 @@ class Application:
 
         # Register exit handler for sys.exit and for script termination
         atexit.register(self._exithandler)
-
-        # if j.core.db is not None:
-        #     if j.core.db.hexists("application", self.appname):
-        #         pids = j.data.serializer.json.loads(
-        #             j.core.db.hget("application", self.appname))
-        #     else:
-        #         pids = []
-        #     if self.systempid not in pids:
-        #         pids.append(self.systempid)
-        #     j.core.db.hset("application", self.appname,
-        #                    j.data.serializer.json.dumps(pids))
-
         # Set state
         self.state = "RUNNING"
 
-        # self.initWhoAmI()
 
         self.logger.info("***Application started***: %s" % self.appname)
 
@@ -196,18 +125,6 @@ class Application:
         except BaseException:
             pass
 
-        # # Write exitcode
-        # if self.writeExitcodeOnExit:
-        #     exitcodefilename = j.sal.fs.joinPaths(j.dirs.TMPDIR, 'qapplication.%d.exitcode'%os.getpid())
-        #     j.logger.log("Writing exitcode to %s" % exitcodefilename, 5)
-        #     j.sal.fs.writeFile(exitcodefilename, str(exitcode))
-
-        # was probably done like this so we dont end up in the _exithandler
-        # os._exit(exitcode) Exit to the system with status n, without calling
-        # cleanup handlers, flushing stdio buffers, etc. Availability: Unix,
-        # Windows.
-
-        # exit will raise an exception, this will bring us to _exithandler
         self._calledexit = True
         # to remember that this is correct behavior we set this flag
 

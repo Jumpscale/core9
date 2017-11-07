@@ -110,7 +110,6 @@ j.core.state = j.tools.executorLocal.state
 
 
 if not j.core.state._configJS:
-    print("####INITENV")
     j.tools.executorLocal.initEnv()
 
 from .core.Dirs import Dirs

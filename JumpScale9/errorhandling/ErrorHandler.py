@@ -158,11 +158,6 @@ class ErrorHandler:
         else:
             codetrace = True
 
-        # if hasattr(exceptionObject, "whoami"):
-        #     whoami = exceptionObject.whoami
-        # else:
-        #     whoami = ""
-
         if hasattr(exceptionObject, "eco"):
             eco = exceptionObject.eco
         else:
@@ -173,30 +168,16 @@ class ErrorHandler:
         else:
             level = 1
 
-        # if hasattr(exceptionObject, "actionkey"):
-        #     actionkey = exceptionObject.actionkey
-        # else:
-        #     actionkey = ""
-
         if hasattr(exceptionObject, "msgpub"):
             msgpub = exceptionObject.msgpub
         else:
             msgpub = ""
 
-        # if hasattr(exceptionObject, "source"):
-        #     source = exceptionObject.source
-        # else:
-        #     source = ""
 
         if hasattr(exceptionObject, "type"):
             type = exceptionObject.type
         else:
             type = "UNKNOWN"
-
-        # if hasattr(exceptionObject, "actionkey"):
-        #     actionkey = exceptionObject.actionkey
-        # else:
-        #     actionkey = ""
 
         if message is None:
             if hasattr(exceptionObject, "message"):
@@ -215,14 +196,6 @@ class ErrorHandler:
         if hasattr(exceptionObject, "tags"):
             tags = exceptionObject.tags + " %s" % tags
 
-        # if ttype!=None:
-        #     try:
-        #         type_str=str(ttype).split("exceptions.")[1].split("'")[0]
-        #     except:
-        #         type_str=str(ttype)
-        # else:
-        #     type_str=""
-
         if eco is None:
             eco = self.getErrorConditionObject(
                 msg=message, msgpub=msgpub, level=level, tb=tb, tags=tags, type=type)
@@ -232,34 +205,8 @@ class ErrorHandler:
             # will do stacktrace
             eco.tracebackSet(tb, exceptionObject)
 
-        # if "message" in exceptionObject.__dict__:
-        #     errorobject.exceptioninfo = j.data.serializer.json.dumps({'message': exceptionObject.message})
-        # else:
-        #     errorobject.exceptioninfo = j.data.serializer.json.dumps({'message': str(exceptionObject)})
 
         eco.exceptionclassname = exceptionObject.__class__.__name__
-
-        # module = inspect.getmodule(exceptionObject)
-        # errorobject.exceptionmodule = module.__name__ if module else None
-
-        # try:
-        #     errorobject.funcfilename=tb.tb_frame.f_code.co_filename
-        # except:
-        #     pass
-
-        # # try:
-        # try:
-        #     backtrace = "~ ".join([res for res in traceback.format_exception(ttype, exceptionObject, tb)])
-        #     if len(backtrace)>10000:
-        #         backtrace=backtrace[:10000]
-        #     errorobject.backtrace=backtrace
-        # except:
-        #     print("ERROR in trying to get backtrace")
-
-        # except Exception,e:
-        #     print "CRITICAL ERROR in trying to get errorobject, is BUG, please check (errorhandler.py on line 228)"
-        #     print "error:%s"%e
-        #     sys.exit()
 
         return eco
 
