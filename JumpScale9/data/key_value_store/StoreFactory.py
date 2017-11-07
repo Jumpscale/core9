@@ -227,12 +227,12 @@ class StoreFactory:
         '''
         if not port:
             port = 6379
-            if "port" in j.core.config["redis"]:
-                port = j.core.config["redis"]["port"]
+            if j.core.state.configGetFromDict("redis", "port"):
+                port = j.core.state.configGetFromDict("redis", "port")
         if not unixsocket:
             unixsocket = None
-            if "unixsocket" in j.core.config["redis"]:
-                unixsocket = j.core.config["redis"]["unixsocket"]
+            if j.core.state.configGetFromDict("redis", "unixsocket"):
+                port = j.core.state.configGetFromDict("redis", "unixsocket")
 
         from JumpScale9.data.key_value_store.redis_store import RedisKeyValueStore
 

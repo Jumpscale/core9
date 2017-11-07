@@ -223,7 +223,7 @@ class SyncCodeForm(npyscreen.FormWithMenus, MyMenu):
 
     def main(self):
         self.sync_deletefiles = self.add_widget(npyscreen.TitleText, name="Delete Remove Files During Sync:",
-                                                value=j.core.state.configGetFromDict("develop", "sync_deletefiles", default="1"))
+                                                value=j.core.state.stateGetFromDict("develop", "sync_deletefiles", default="1"))
         self.sync_deletefiles.text_field_begin_at = 50
         self.sync_deletefiles.use_two_lines = False
 
@@ -238,5 +238,5 @@ class SyncCodeForm(npyscreen.FormWithMenus, MyMenu):
     def afterEditing(self):
         assert str(self.sync_deletefiles.value) == "1" or str(
             self.sync_deletefiles.value) == "0"
-        j.core.state.configSetInDict(
+        j.core.state.stateSetInDict(
             "develop", "sync_deletefiles", self.sync_deletefiles.value)

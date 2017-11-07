@@ -4,11 +4,11 @@ from js9 import j
 class CodeDirs():
     def __init__(self):
         self.path = j.dirs.CODEDIR
-        
+
         self.load()
 
     def load(self):
-        data=j.core.state.configGetFromDict("develop","codedirs","")
+        data=j.core.state.stateGetFromDict("develop","codedirs","")
         self.tree = j.data.treemanager.get(data=data)
         self.tree.setDeleteState() #set all on deleted state
         types = j.sal.fs.listDirsInDir(j.dirs.CODEDIR, False, True)
@@ -30,7 +30,7 @@ class CodeDirs():
                         path = "%s.%s.%s" % (ttype, account, repo)
                         self.tree.set(path, cat="repo", item=CodeDir(self, ttype, account, repo))
 
-        self.tree.removeDeletedItems() #make sure that the ones no longer there are deleted        
+        self.tree.removeDeletedItems() #make sure that the ones no longer there are deleted
 
     # @property
     # def codedirs(self):
@@ -70,9 +70,9 @@ class CodeDirs():
             raise j.exceptions.Input("found more than 1 codedir: %s:%s" % (account, reponame))
 
         return res[0]
-    
+
     def save(self):
-        j.core.state.configSetInDict("develop","codedirs", self.tree.dumps())
+        j.core.state.stateSetInDict("develop","codedirs", self.tree.dumps())
 
 
     # def selectionGet(self):

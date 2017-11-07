@@ -20,10 +20,9 @@ class Application:
         self.state = "UNKNOWN"
         self.appname = 'UNKNOWN'
 
-        self._debug = j.core.config["system"]["debug"]
+        self._debug = j.core.state.configGetFromDict('system', 'debug')
 
         self._systempid = None
-        self._whoAmIBytestr = None
         self._whoAmi = None
 
         self.interactive = True
@@ -115,11 +114,6 @@ class Application:
     #     j.do.installer.writeenv(base=j.sal.fs.getcwd())
     #     j.core.db.flushall()
 
-    @property
-    def whoAmIBytestr(self):
-        if self._whoAmi is None:
-            self._initWhoAmI()
-        return self._whoAmIBytestr
 
     @property
     def whoAmI(self):
@@ -135,8 +129,7 @@ class Application:
 
     def _initWhoAmI(self):
         self._whoAmi = WhoAmI(pid=self.systempid)
-        self._whoAmIBytestr = struct.pack(
-            "<IHH", self.whoAmI.pid)
+
 
     def getWhoAmiStr(self):
         return "_".join([str(item) for item in self.whoAmI])
@@ -251,21 +244,6 @@ class Application:
         if not j.sal.fs.exists(path=path):
             return False
         return True
-
-    # def getAppInstanceHRD(
-    #         self,
-    #         name,
-    #         instance,
-    #         domain="jumpscale",
-    #         parent=None):
-    #     """
-    #     returns hrd for specific domain,name and & instance name
-    #     """
-    #     return j.application.config
-    #     # TODO: fix
-    #     service = j.atyourservice.server.getService(
-    #         domain=domain, name=name, instance=instance)
-    #     return service.hrd
 
     def getAppInstanceHRDs(self, name, domain="jumpscale"):
         """
@@ -382,41 +360,6 @@ class Application:
             j.data.serializer.json.dumps(pids))
 
         return pids
-
-    # def getUniqueMachineId(self):
-    #     """
-    #     will look for network interface and return a hash calculated from lowest mac address from all physical nics
-    #     """
-    #     # if unique machine id is set in grid.hrd, then return it
-    #     uniquekey = 'node.machineguid'
-    #     if j.application.config.jumpscale['system']['grid'].get(
-    #             uniquekey, False):
-    #         machineguid = j.application.config.jumpscale['system']['grid'].get(
-    #             uniquekey)
-    #         if machineguid.strip():
-    #             return machineguid
-
-    #     nics = j.sal.nettools.getNics()
-    #     if j.core.platformtype.myplatform.isWindows:
-    #         order = ["local area", "wifi"]
-    #         for item in order:
-    #             for nic in nics:
-    #                 if nic.lower().find(item) != -1:
-    #                     return j.sal.nettools.getMacAddress(nic)
-    #     macaddr = []
-    #     for nic in nics:
-    #         if nic.find("lo") == -1:
-    #             nicmac = j.sal.nettools.getMacAddress(nic)
-    #             macaddr.append(nicmac.replace(":", ""))
-    #     macaddr.sort()
-    #     if len(macaddr) < 1:
-    #         raise j.exceptions.RuntimeError(
-    #             "Cannot find macaddress of nics in machine.")
-
-    #     if j.application.config.jumpscale['system']['grid'].get(
-    #             uniquekey, False):
-    #         j.application.config.jumpscale['system']['grid'][uniquekey] = macaddr[0]
-    #     return macaddr[0]
 
     def _setWriteExitcodeOnExit(self, value):
         if not j.data.types.bool.check(value):
