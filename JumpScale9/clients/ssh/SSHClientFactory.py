@@ -181,10 +181,14 @@ class SSHClientFactory:
         return socketpath
 
     def SSHAgentCheck(self):
+        """
+        will check that agent started if not will start it.
+        """
         if "SSH_AUTH_SOCK" not in os.environ:
             self._initSSH_ENV(True)
             self._addSSHAgentToBashProfile()
         if not self.SSHAgentAvailable():
+            self.logger.info('Will start agent')
             self._loadSSHAgent()
 
     def SSHKeyLoad(self, path, duration=3600 * 24):
@@ -259,7 +263,7 @@ class SSHClientFactory:
                 path, filter="*.pub") if j.sal.fs.exists(item.replace(".pub", ""))]
             keysinfs = [item for item in keysinfs if item not in keysloaded]
 
-            res = self.askItemsFromList(
+            res = j.tools.console.askChoiceMultiple(
                 keysinfs,
                 "select ssh keys to load, use comma separated list e.g. 1,4,3 and press enter.")
         else:
@@ -274,54 +278,38 @@ class SSHClientFactory:
             j.do.executeInteractive(cmd)
 
     def SSHKeyGetPathFromAgent(self, keyname, die=True):
-        try:
-            # TODO: why do we use subprocess here and not j.do.execute?
-            out = subprocess.check_output(["ssh-add", "-L"])
-        except BaseException:
-            return None
-
-        for line in out.splitlines():
-            delim = ("/%s" % keyname).encode()
-
-            if line.endswith(delim):
-                line = line.strip()
-                keypath = line.split(" ".encode())[-1]
-                content = line.split(" ".encode())[-2]
-                if not j.sal.fs.exists(path=keypath):
-                    if j.sal.fs.exists("keys/%s" % keyname):
-                        keypath = "keys/%s" % keyname
-                    else:
-                        raise RuntimeError(
-                            "could not find keypath:%s" % keypath)
-                return keypath.decode()
+        """
+        Returns Path of public key that is loaded in the agent
+        @param keyname: name of key loaded to agent to get its path
+        """
+        self.SSHAgentCheck()
+        for item in j.clients.ssh.SSHKeysListFromAgent():
+            if item.endswith(keyname):
+                return item
         if die:
             raise RuntimeError(
                 "Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" %
                 keyname)
-        return None
 
     def SSHKeyGetFromAgentPub(self, keyname, die=True):
-        try:
-            # TODO: why do we use subprocess here and not j.do.execute?
-            out = subprocess.check_output(["ssh-add", "-L"])
-        except BaseException:
-            return None
-
-        for line in out.splitlines():
-            delim = (".ssh/%s" % keyname).encode()
-            if line.endswith(delim):
-                content = line.strip()
-                content = content.decode()
-                return content
+        """
+        Returns Content of public key that is loaded in the agent
+        @param keyname: name of key loaded to agent to get content from 
+        """
+        self.SSHAgentCheck()
+        for item in j.clients.ssh.SSHKeysListFromAgent():
+            if item.endswith(keyname):
+                return j.sal.fs.readFile(item + ".pub")
         if die:
             raise RuntimeError(
                 "Did not find key with name:%s, check its loaded in ssh-agent with ssh-add -l" %
                 keyname)
-        return None
 
     def SSHKeysListFromAgent(self, keyIncluded=False):
         """
-        returns list of paths
+        list ssh keys from the agent
+        :param key_included:
+        :return: list of paths
         """
         if "SSH_AUTH_SOCK" not in os.environ:
             self._initSSH_ENV(True)
@@ -438,7 +426,7 @@ class SSHClientFactory:
                 ip_address=remoteipaddr,
                 keyname=keyname)
 
-    def _loadSSHAgent(self, path=None, createkeys=False, killfirst=False):
+    def _loadSSHAgent(self, path=None, create_keys=False, kill_first=False):
         """
         check if ssh-agent is available & there is key loaded
 
@@ -460,11 +448,11 @@ class SSHClientFactory:
 
         if len(res) > 1:
             self.logger.info("more than 1 ssh-agent, will kill all")
-            killfirst = True
+            kill_first = True
         if len(res) == 0 and j.sal.fs.exists(socketpath):
             j.do.delete(socketpath)
 
-        if killfirst:
+        if kill_first:
             cmd = "killall ssh-agent"
             # self.logger.info(cmd)
             j.do.execute(cmd, showout=False, outputStderr=False, die=False)
@@ -525,6 +513,21 @@ class SSHClientFactory:
                 raise RuntimeError(
                     "Could not start ssh-agent, something went wrong,\nstdout:%s\nstderr:%s\n" %
                     (result, err))
+        if path:
+            path_found = j.sal.fs.exists(path)
+            if not path_found and not create_keys:
+                raise RuntimeError("key %s is not found" % path)
+
+            if not path_found and create_keys:
+                self.logger.info("Generating new key %s" % path)
+                return_code, out, err = j.do.execute("ssh-keygen -t rsa -f %s -N \"\"" % path,
+                                                    die=False,
+                                                    showout=False,
+                                                    outputStderr=False)
+                if return_code != 0:
+                    raise RuntimeError(
+                        "Could not add key to the ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
+            self.SSHKeyLoad(path)
 
         if path:
             path_found = j.sal.fs.exists(path)
