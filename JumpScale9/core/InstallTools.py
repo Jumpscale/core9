@@ -407,7 +407,6 @@ class FSMethods():
                 path)
 
     def exists(self, path, executor=None):
-        import ipdb; ipdb.set_trace()
         path = self.home_expand(path) 
         if executor:
             return executor.exists(path)
