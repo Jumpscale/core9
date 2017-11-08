@@ -1,35 +1,24 @@
-# from JumpScale9AYS.tools.lock.Lock import FileLock
 from JumpScale9 import j
 
 import sys
-# import random
-# import asyncio
-# import selectors
 
 from urllib.request import urlopen
 
 import os
 import tarfile
 import shutil
-# import tempfile
 import platform
 import subprocess
 import time
 import pystache
 import pytoml
 import fnmatch
-# from subprocess import Popen
 import re
-# import inspect
-# import yaml
 import importlib
-# import fcntl
 
 
 class TimeoutError(RuntimeError, TimeoutError):
     pass
-
-
 
 
 class FSMethods():
@@ -57,17 +46,19 @@ class FSMethods():
         @param filename: string (filename to open for reading )
         @rtype: string representing the file contents
         """
+        filename = self.home_expand(filename)
         with open(filename) as fp:
             data = fp.read()
         return data
 
     def touch(self, path):
+        path = self.home_expand(path)
         self.writeFile(path, "")
 
     textstrip = j.data.text.strip
 
     def writeFile(self, path, content, strip=True):
-
+        path = self.home_expand(path)
         self.createDir(self.getDirName(path))
 
         if strip:
@@ -77,6 +68,7 @@ class FSMethods():
             fo.write(content)
 
     def delete(self, path, force=False):
+        path = self.home_expand(path)
 
         self.removeSymlink(path)
 
@@ -108,6 +100,9 @@ class FSMethods():
                 os.remove(path)
 
     def joinPaths(self, *args):
+        if len(args) > 0:
+            args = list(args)
+            args[0] = self.home_expand(args[0])
         return os.path.join(*args)
 
     def copyTree(
@@ -305,15 +300,9 @@ class FSMethods():
                 'Source path %s in system.fs.copyTree is not a directory' %
                 src)
 
-    def copyFile(
-            self,
-            source,
-            dest,
-            deletefirst=False,
-            skipIfExists=False,
-            makeExecutable=False):
-        """
-        """
+    def copyFile(self, source, dest, deletefirst=False, skipIfExists=False, makeExecutable=False):
+        source = self.home_expand(source)
+        dest = self.home_expand(dest)
         if self.isDir(dest):
             dest = self.joinPaths(dest, self.getBaseName(source))
 
@@ -332,6 +321,7 @@ class FSMethods():
             self.chmod(dest, 0o770)
 
     def createDir(self, path):
+        path = self.home_expand(path) 
         if not os.path.exists(path) and not os.path.islink(path):
             os.makedirs(path)
 
@@ -342,6 +332,7 @@ class FSMethods():
         @param followSoftlink: boolean
         @rtype: boolean (True if directory exists)
         """
+        path = self.home_expand(path) 
         if self.isLink(path):
             if not followSoftlink:
                 return False
@@ -357,6 +348,7 @@ class FSMethods():
         @param followSoftlink: boolean
         @rtype: boolean (True if file exists for the given path)
         """
+        path = self.home_expand(path) 
         if self.isLink(path):
             if not followSoftlink:
                 return False
@@ -371,6 +363,7 @@ class FSMethods():
         @param path: string
         @rtype: boolean (True if the specified path is a link)
         """
+        path = self.home_expand(path) 
         if path[-1] == os.sep:
             path = path[:-1]
         if (path is None):
@@ -400,6 +393,7 @@ class FSMethods():
         return False
 
     def list(self, path):
+        path = self.home_expand(path) 
         # self.logger.info("list:%s"%path)
         if(self.isDir(path)):
             s = sorted(["%s/%s" % (path, item) for item in os.listdir(path)])
@@ -413,6 +407,7 @@ class FSMethods():
                 path)
 
     def exists(self, path, executor=None):
+        path = self.home_expand(path) 
         if executor:
             return executor.exists(path)
         else:
@@ -442,6 +437,8 @@ class FSMethods():
         """
         dest is where the link will be created pointing to src
         """
+        src = self.home_expand(src) 
+        dest = self.home_expand(dest) 
         if self.debug:
             self.logger.info(("symlink: src:%s dest(islink):%s" % (src, dest)))
 
@@ -468,6 +465,8 @@ class FSMethods():
                 os.symlink(src, dest)
 
     def symlinkFilesInDir(self, src, dest, delete=True, includeDirs=False, makeExecutable=False):
+        src = self.home_expand(src) 
+        dest = self.home_expand(dest) 
         if includeDirs:
             items = self.listFilesAndDirsInDir(
                 src, recursive=False, followSymlinks=False, listSymlinks=False)
@@ -488,6 +487,7 @@ class FSMethods():
                 self.chmod(item, 0o770)
 
     def removeSymlink(self, path):
+        path = self.home_expand(path) 
         if j.core.platformtype.myplatform.isWindows:
             try:
                 cmd = "junction -d %s 2>&1 > null" % (path)
@@ -504,6 +504,7 @@ class FSMethods():
         # self.logger.info('Get basename for path: %s'%path,9)
         if path is None:
             raise TypeError('Path is not passed in system.fs.getDirName')
+        path = self.home_expand(path) 
         try:
             return os.path.basename(path.rstrip(os.path.sep))
         except Exception as e:
@@ -518,6 +519,7 @@ class FSMethods():
         if fullpath is None or fullpath.strip == "":
             raise RuntimeError("path cannot be empty")
 
+        fullpath = self.home_expand(fullpath) 
         if not self.isLink(fullpath) and os.path.isdir(fullpath):
             return True
         if self.isLink(fullpath):
@@ -539,6 +541,7 @@ class FSMethods():
         # self.logger.info('Get directory name of path: %s' % path,9)
         if path is None:
             raise TypeError('Path is not passed in system.fs.getDirName')
+        path = self.home_epand(path)
         dname = os.path.dirname(path)
         dname = dname.replace("/", os.sep)
         dname = dname.replace("//", os.sep)
@@ -560,6 +563,7 @@ class FSMethods():
         """Works only for unix
         Return a string representing the path to which the symbolic link points.
         """
+        path = self.home_expand(path) 
         while path[-1] == "/" or path[-1] == "\\":
             path = path[:-1]
         # self.logger.info('Read link with path: %s'%path,8)
@@ -581,6 +585,7 @@ class FSMethods():
         """
         if path is None:
             raise TypeError('Path is not passed in system.fs.listDir')
+        path = self.home_expand(path) 
         if(self.exists(path)):
             if(self.isDir(path)) or (followSymlinks and self.checkDirOrLinkToDir(path)):
                 names = os.listdir(path)
@@ -616,6 +621,7 @@ class FSMethods():
         # return result
         if path is None or path.strip == "":
             raise RuntimeError("path cannot be empty")
+        path = self.home_expand(path) 
         files = self._listInDir(path, followSymlinks=True)
         filesreturn = []
         for file in files:
@@ -662,6 +668,7 @@ class FSMethods():
         @Param exclude: list of std filters if matches then exclude
         @rtype: list
         """
+        path = self.home_expand(path) 
         if depth is not None:
             depth = int(depth)
         # self.logger.info('List files in directory with path: %s' % path,9)
@@ -699,6 +706,7 @@ class FSMethods():
         @param type is string with f & d inside (f for when to find files, d for when to find dirs)
         @rtype: list
         """
+        path = self.home_expand(path) 
         if depth is not None:
             depth = int(depth)
         self.logger.info('List files in directory with path: %s' % path, 9)
@@ -729,6 +737,7 @@ class FSMethods():
         # 2. `sensitive`: case-sensitive comparison
         # 3. `insensitive`: case-insensitive comparison
         """
+        path = self.home_expand(path) 
 
         dircontent = self._listInDir(path)
         filesreturn = []
@@ -841,6 +850,7 @@ class FSMethods():
         /dir1/dir2/            -> /dir1/
         TODO: why do we have 2 implementations which are almost the same see getParentDirName()
         """
+        path = self.home_expand(path) 
         parts = path.split(os.sep)
         if parts[-1] == '':
             parts = parts[:-1]
@@ -850,6 +860,7 @@ class FSMethods():
         return os.sep.join(parts)
 
     def getFileExtension(self, path):
+        path = self.home_expand(path) 
         extcand = path.split(".")
         if len(extcand) > 0:
             ext = extcand[-1]
@@ -860,6 +871,7 @@ class FSMethods():
     def chown(self, path, user):
 
         from pwd import getpwnam
+        path = self.home_expand(path) 
 
         getpwnam(user)[2]
         uid = getpwnam(user).pw_uid
@@ -885,6 +897,7 @@ class FSMethods():
         """
         @param permissions e.g. 0o660 (USE OCTAL !!!)
         """
+        path = self.home_expand(path)
         os.chmod(path, permissions)
         for root, dirs, files in os.walk(path):
             for ddir in dirs:
@@ -902,6 +915,19 @@ class FSMethods():
                 except Exception as e:
                     if str(e).find("No such file or directory") == -1:
                         raise RuntimeError("%s" % e)
+
+    def home_expand(self, path):
+        """
+        Expands ~ prefix in paths to their full path equivalent.
+
+        @param path Path to expand
+        @raises RuntimeError when HOME environment variable is not set
+        """
+        if path and path.startswith("~%s" % os.sep):
+            if not os.environ['HOME']:
+                raise RuntimeError("Cannot expand directory when HOME environment variable is not set!")
+            return os.path.expanduser(path)
+        return path
 
     def getTmpPath(self, filename):
         return "%s/jumpscaleinstall/%s" % ('/tmp', filename)
