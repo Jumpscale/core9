@@ -209,29 +209,29 @@ class SSHClientFactory:
             self.logger.info("ssh key:%s NOT loaded" % keyNamePath)
             return False
 
-    # def _askItemsFromList(self, items, msg=""):
-    #     if len(items) == 0:
-    #         return []
-    #     if msg != "":
-    #         print(msg)
-    #     nr = 0
-    #     for item in items:
-    #         nr += 1
-    #         print(" - %s: %s" % (nr, item))
-    #     print("select item(s) from list (nr or comma separated list of nr, * is all)")
-    #     item = input()
-    #     if item.strip() == "*":
-    #         return items
-    #     elif item.find(",") != -1:
-    #         res = []
-    #         itemsselected = [item.strip() for item in item.split(",") if item.strip() != ""]
-    #         for item in itemsselected:
-    #             item = int(item) - 1
-    #             res.append(items[item])
-    #         return res
-    #     else:
-    #         item = int(item) - 1
-    #         return [items[item]]
+    def askItemsFromList(self, items, msg=""):
+        if len(items) == 0:
+            return []
+        if msg != "":
+            print(msg)
+        nr = 0
+        for item in items:
+            nr += 1
+            print(" - %s: %s" % (nr, item))
+        print("select item(s) from list (nr or comma separated list of nr, * is all)")
+        item = input()
+        if item.strip() == "*":
+            return items
+        elif item.find(",") != -1:
+            res = []
+            itemsselected = [item.strip() for item in item.split(",") if item.strip() != ""]
+            for item in itemsselected:
+                item = int(item) - 1
+                res.append(items[item])
+            return res
+        else:
+            item = int(item) - 1
+            return [items[item]]
 
     def SSHKeysLoad(self, path=None, duration=3600 * 24, die=False):
         """
@@ -255,7 +255,7 @@ class SSHClientFactory:
                       for item in self.SSHKeysListFromAgent()]
 
         if j.do.isDir(path):
-            keysinfs = [j.sal.fs.getBaseName(item).replace(".pub", "") for item in self.listFilesInDir(
+            keysinfs = [j.sal.fs.getBaseName(item).replace(".pub", "") for item in j.sal.fs.listFilesInDir(
                 path, filter="*.pub") if j.sal.fs.exists(item.replace(".pub", ""))]
             keysinfs = [item for item in keysinfs if item not in keysloaded]
 
@@ -525,6 +525,22 @@ class SSHClientFactory:
                 raise RuntimeError(
                     "Could not start ssh-agent, something went wrong,\nstdout:%s\nstderr:%s\n" %
                     (result, err))
+
+        if path:
+            path_found = j.sal.fs.exists(path)
+            if not path_found and not createkeys:
+                raise RuntimeError("key %s is not found" % path)
+
+            if not path_found and createkeys:
+                self.logger.info("Generating new key %s" % path)
+                return_code, out, err = j.do.execute("ssh-keygen -t rsa -f %s -N \"\"" % path,
+                                                    die=False,
+                                                    showout=True,
+                                                    outputStderr=True)
+                if return_code != 0:
+                    raise RuntimeError(
+                        "Could not add key to the ssh-agent, \nstdout:%s\nstderr:%s\n" % (out, err))
+            self.SSHKeyLoad(path)
 
     def SSHAgentAvailable(self):
         if not j.sal.fs.exists(self._getSSHSocketpath()):
