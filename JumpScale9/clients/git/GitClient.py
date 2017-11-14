@@ -85,9 +85,9 @@ class GitClient:
 
     def getBranchOrTag(self):
         try:
-            return 'tag', self.repo.git.describe('--tags')
+            return 'tag', self.repo.git.describe('--tags', '--exact-match')
         except BaseException:
-            return 'branch', self.branchName
+            return 'branch', self.repo.head.ref.name
 
     def switchBranch(self, branchName, create=True):  # NOQA
         if create:
@@ -209,7 +209,7 @@ class GitClient:
             return
         return self.repo.index.commit(message)
 
-    def push(self, force=False):    
+    def push(self, force=False):
         if force:
             self.repo.git.push('-f')
         else:
