@@ -35,7 +35,7 @@ def path_check(**arguments):
     - "pureFile": Means that the path argument value must be an existing file
     - "dir": Means that the path argument value must be an existing directory or a link to a directory
     - "pureDir": Means that the path argument value must be an existing directory
-    When no validations are added, the value of the path argument will still be expanded 
+    When no validations are added, the value of the path argument will still be expanded
     with the current home directory if the path starts with ~
 
     E.g.
@@ -681,7 +681,7 @@ class SystemFS:
         while path[-1] == "/" or path[-1] == "\\":
             path = path[:-1]
         self.logger.debug('Read link with path: %s' % path)
-        if j.core.platformtype.myplatform.isUnix:
+        if j.core.platformtype.myplatform.isUnix or j.core.platformtype.myplatform.isMac:
             res = os.readlink(path)
         elif j.core.platformtype.myplatform.isWindows:
             raise j.exceptions.RuntimeError('Cannot readLink on windows')
@@ -964,7 +964,7 @@ class SystemFS:
         if not self.exists(dir):
             self.createDir(dir)
 
-        if j.core.platformtype.myplatform.isUnix:
+        if j.core.platformtype.myplatform.isUnix or j.core.platformtype.myplatform.isMac:
             self.logger.debug("Creating link from %s to %s" % (path, target))
             os.symlink(path, target)
         elif j.core.platformtype.myplatform.isWindows:
@@ -1003,7 +1003,7 @@ class SystemFS:
         with exactly one directory separator (os.sep) inserted between components, unless path2 is empty
         """
         self.logger.debug('Create a hard link pointing to %s named %s' % (source, destin))
-        if j.core.platformtype.myplatform.isUnix:
+        if j.core.platformtype.myplatform.isUnix or j.core.platformtype.myplatform.isMac:
             return os.link(source, destin)
         else:
             raise j.exceptions.RuntimeError(
@@ -1547,7 +1547,7 @@ class SystemFS:
         for item in array:
             path = path + os.sep + item
         path = path + os.sep
-        if j.core.platformtype.myplatform.isUnix:
+        if j.core.platformtype.myplatform.isUnix or j.core.platformtype.myplatform.isMac:
             path = path.replace("//", "/")
             path = path.replace("//", "/")
         return path

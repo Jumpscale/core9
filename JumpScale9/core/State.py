@@ -32,7 +32,7 @@ class State():
     @property
     def versions(self):
         versions = {}
-        for name, path in self.config.get('plugins', {}).items():
+        for name, path in self.configGet('plugins', {}).items():
             repo = j.clients.git.get(path)
             _, versions[name] = repo.getBranchOrTag()
         return versions
