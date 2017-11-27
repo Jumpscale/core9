@@ -39,7 +39,7 @@ JumpScale supports two modes of logging, **Development** and **Production**.
 
 ## Development mode:
 
-It is the default mode of JumpScale. In this mode the root logger has two handlers that write both to the console and to a logging file located at `/optvat/log/jumpscale.log`.<br>
+It is the default mode of JumpScale. In this mode the root logger has two handlers that write both to the console and to a logging file located at `/host/var/log/jumpscale.log`.<br>
 By default the output level to the console is set to INFO and the output level to file is DEBUG.
 
 Example of Development mode output:
@@ -142,7 +142,8 @@ As you can see the JumpScale module are properly shown and use the default loggi
 
 # Configuration
 
-Logging configuration is located by default in jumpscale config file
+Logging configuration is located by default in jumpscale config file (`/root/js9host/cfg/jumpscale9.toml`).  
+If the logging section doesn't exist in your config file, you can add it yourself.
 
 There are 3 options you can configure.
 
@@ -152,13 +153,11 @@ There are 3 options you can configure.
 
 Example logging configuration:
 
-```
-mode = 'DEV'
-level = 'INFO'
-
-filter = 
-    'j.sal.fs',
-    'j.data.hrd',
+```toml
+[logging]
+mode = "DEV"
+level = "INFO"
+filter = ["j.sal.fs"]
 ```
 
 ```
