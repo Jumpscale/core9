@@ -89,3 +89,6 @@ ENV/
 .rocks
 *.snap
 *.xlog
+
+# editor
+.vscode
