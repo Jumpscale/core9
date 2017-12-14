@@ -107,6 +107,7 @@ class State():
             if save:
                 self.configSave(config, path)
             return False
+
     def configSetInDict(self, key, dkey, dval):
         self._setInDict(key=key, dkey=dkey, dval=dval, config=self._configJS, path=self.configJSPath)
 
