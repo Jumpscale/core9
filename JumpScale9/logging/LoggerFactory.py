@@ -81,6 +81,7 @@ class LoggerFactory():
                 # print("JSLOGGER:%s" % name)
                 # logger = logging.getLogger(name)
                 logger = JSLogger(name)
+                logger.level = j.core.state.configGetFromDict("logging", "level", 'DEBUG')
 
                 for handler in self.handlers._all:
                     logger.handlers = []
@@ -261,7 +262,9 @@ class LoggerFactory():
         get info from config file & make sure all logging is done properly
         """
         self.enabled = j.core.state.configGetFromDict("logging", "enabled", True)
-        self.loggers_level_set(j.core.state.configGetFromDict("logging", "level", 'DEBUG'))
+        level = j.core.state.configGetFromDict("logging", "level", 'DEBUG')
+        self.loggers_level_set(level)
+        self.handlers_level_set(level)
         self.filter = []
         self.exclude = []
         self.loggers = {}
