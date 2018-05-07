@@ -160,6 +160,7 @@ class ExecutorBase(JSBASE):
         is dict of all relevant param's on system
         """
 
+
         def do():
 
             self.logger.debug("stateonsystem for non local:%s" % self)
@@ -275,7 +276,7 @@ class ExecutorBase(JSBASE):
             return res
 
         if self._stateOnSystem is None:
-            self._stateOnSystem = self.cache.get("stateOnSystem", do)
+            self._stateOnSystem = self.cache.get('stateOnSystem:%s' % self.id, do)
         return self._stateOnSystem
 
     def enableDebug(self):
