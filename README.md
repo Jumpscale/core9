@@ -1,3 +1,6 @@
+# ACTIVE DEVELOPMENT CONTINUES IN: 
+# https://github.com/threefoldtech
+
 # JumpScale 9
 
 [![Join the chat at https://gitter.im/Jumpscale/jumpscale_core9](https://badges.gitter.im/Jumpscale/jumpscale_core9.svg)](https://gitter.im/Jumpscale/jumpscale_core9?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) ![travis](https://travis-ci.org/Jumpscale/core9.svg?branch=master)
