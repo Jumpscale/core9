@@ -49,4 +49,4 @@ pip3 install PyNaCl --upgrade
 
 
 # install version 3 of docker client
-sudo pip3 install docker==3.*
+pip3 install docker==3.*
