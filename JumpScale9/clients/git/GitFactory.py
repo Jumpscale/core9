@@ -705,7 +705,7 @@ class GitFactory(JSBASE):
 
         return result
 
-    def findGitPath(self, path):
+    def findGitPath(self, path,die=True):
         """
         given a path, check if this path or any of its parents is a git repo, return the first git repo
         :param path: (String) path from where to start search
@@ -716,7 +716,9 @@ class GitFactory(JSBASE):
             if j.sal.fs.exists(path=j.sal.fs.joinPaths(path, ".git")):
                 return path
             path = j.sal.fs.getParent(path)
-        raise j.exceptions.Input("Cannot find git path in:%s" % path)
+        if die:
+            raise j.exceptions.Input("Cannot find git path in:%s" % path)
+        
 
     def parseGitConfig(self, repopath):
         """

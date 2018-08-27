@@ -337,7 +337,7 @@ class Numeric(String):
             bindata = self.get_default()
 
         elif len(bindata) not in [6, 10]:
-            bindata = self.str2bytes(bindata.decode('utf-8'))
+            raise j.exceptions.Input("len of data needs to be 6 or 10")
 
         ttype = struct.unpack("B", builtins.bytes([bindata[0]]))[0]
         curtype = struct.unpack("B", builtins.bytes([bindata[1]]))[0]
@@ -387,6 +387,17 @@ class Numeric(String):
         res = res.replace(" %", "%")
         # print(res)
         return res.strip()
+        
+    def getCur(self, value):
+            value = value.lower()
+            for cur2 in list(j.clients.currencylayer.cur2usd.keys()):
+                # print(cur2)
+                if value.find(cur2) != -1:
+                    # print("FOUND:%s"%cur2)
+                    value = value.lower().replace(cur2, "").strip()
+                    return value, cur2
+            cur2 = "usd"
+            return value, cur2
 
     def str2bytes(self, value):
         """
@@ -439,23 +450,12 @@ class Numeric(String):
         else:
             negative = False
 
-        def getCur(value):
-            value = value.lower()
-            for cur2 in list(j.clients.currencylayer.cur2usd.keys()):
-                # print(cur2)
-                if value.find(cur2) != -1:
-                    # print("FOUND:%s"%cur2)
-                    value = value.lower().replace(cur2, "").strip()
-                    return value, cur2
-            cur2 = "usd"
-            return value, cur2
-
         try:
             # dirty trick to see if value can be float, if not will look for currencies
             v = float(value)
             cur2 = "usd"
         except Exception as e:
-            value, cur2 = getCur(value)
+            value, cur2 = self.getCur(value)
 
         if value.find("k") != -1:
             value = value.replace("k", "").strip()

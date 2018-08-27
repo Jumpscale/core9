@@ -54,7 +54,7 @@ class NetTools(JSBASE):
         finally:
             if conn:
                 conn.close()
-        return True
+        return True    
 
     def ip_to_num(self, ip="127.0.0.1"):
         """

@@ -80,7 +80,7 @@ class ErrorHandler(JSBASE):
                 self._blacklist = list()
         return self._blacklist
 
-    def toolStripNonAsciFromText(text):
+    def strip_to_ascii(text):
         return string.join([char for char in str(text) if (
             (ord(char) > 31 and ord(char) < 127) or ord(char) == 10)], "")
 

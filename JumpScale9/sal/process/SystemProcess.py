@@ -69,8 +69,7 @@ class SystemProcess(JSBASE):
 
         return exitcode
 
-    def execute(self, command, showout=True, useShell=True, log=True, cwd=None, timeout=600, errors=[],
-                    ok=[], captureout=True, die=True, async=False,env=None):
+    def execute(self, command, showout=True, useShell=True, log=True, cwd=None, timeout=600, errors=[], ok=[], captureout=True, die=True, async_=False, env=None):
 
         command = j.data.text.strip(command)
         if "\n" in command:
@@ -111,7 +110,7 @@ class SystemProcess(JSBASE):
         out=""
         err=""
 
-        if async:
+        if async_:
             return p
 
         captureOutput=True

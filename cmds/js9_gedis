@@ -1,0 +1,51 @@
+#! /usr/bin/env python3
+from js9 import j
+j.tools.bash.local.locale_check()
+import click
+import sys
+
+logger = j.logger.get("js9_gedis", force=True)
+
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+@click.option('--instance', '-i', default="main") #TODO:*1 do more config options
+def new(instance):
+    """
+    create a new gedis server in current directory and put the default settings
+    """
+    s=j.servers.gedis.new(instance=instance)
+    print(s.config)
+
+@click.command()
+@click.option('--instance', '-i', default="main") #TODO:*1 do more config options
+def configure(instance):
+    """
+    configure gedis environment
+    """
+    from IPython import embed;embed(colors='Linux')
+    s=j.servers.gedis.configure(instance=instance)
+    print(s.config)
+
+@click.command()
+@click.option('--instance', '-i', default="main")
+@click.option('--background', '-b', type=bool, is_flag=True, default=False,
+              help='will actively keep monitoring for changes, and send changed files over')
+def start(instance,background):
+    """
+    start gedisserver from defined instance
+    """
+    if instance == "main":
+        s=j.servers.gedis.configure(instance=instance)
+    j.servers.gedis.start(instance=instance,background=background)
+
+cli.add_command(new)
+cli.add_command(configure)
+cli.add_command(start)
+
+if __name__ == '__main__':
+    cli()

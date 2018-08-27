@@ -19,6 +19,7 @@ class Types(JSBASE):
         self.guid = Guid()
         self.path = Path()
         self.bool = Boolean()
+        self.boolean = Boolean()
         self.int = Integer()
         self.integer = self.int
         self.float = Float()

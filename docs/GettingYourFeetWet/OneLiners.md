@@ -27,7 +27,7 @@ Out[4]: '0x9863fa568bb0f744'
 
 ## Data serialization
 
-You can serialize (dump) and deserialize (load) your data form and to many data formats (base64, hrd, msgpack, lzma, pickle, snappy, toml, ujson, yaml) with the same interfaces
+You can serialize (dump) and deserialize (load) your data form and to many data formats (base64, msgpack, lzma, pickle, snappy, toml, ujson, yaml) with the same interfaces
 
 `j.data.serializer.`yourserializer.`dumps/loads`
 ```IPython

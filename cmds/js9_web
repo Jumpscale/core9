@@ -1,0 +1,41 @@
+#! /usr/bin/env python3
+from js9 import j
+j.tools.bash.local.locale_check()
+import click
+import sys
+
+logger = j.logger.get("js9_web", force=True)
+
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+@click.option('--instance', '-i', default="main") #TODO:*1 do more config options
+def configure(instance):
+    """
+    configure web environment
+    """
+    s=j.servers.web.configure(instance=instance)
+    print(s.config)
+
+@click.command()
+@click.option('--instance', '-i', default="main")
+@click.option('--background', '-b', type=bool, is_flag=True, default=False,
+              help='will actively keep monitoring for changes, and send changed files over')
+@click.option('--debug', '-d', type=bool, is_flag=True, default=False)
+def start(instance,background, debug):
+    """
+    start webserver from defined instance
+    """
+    if instance == "main":
+        s=j.servers.web.configure(instance=instance)
+    j.servers.web.start(instance=instance,background=background, debug=debug)
+
+cli.add_command(configure)
+cli.add_command(start)
+
+if __name__ == '__main__':
+    cli()

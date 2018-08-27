@@ -13,6 +13,7 @@ except:
 import os
 import time
 # import sys
+from JumpScale9 import tcpPortConnectionTest
 
 from JumpScale9.core.JSBase import JSBase as JSBASE
 
@@ -197,7 +198,7 @@ class RedisFactory(JSBASE):
         j.sal.process.execute(cmd)
         limit_timeout = time.time() + timeout
         while time.time() < limit_timeout:
-            if j.core.db:
+            if tcpPortConnectionTest("localhost", 6379):
                 break
             time.sleep(2)
         else:

@@ -38,3 +38,19 @@ class SerializerBase(JSBASE):
             data = j.data.serializer.serializers.types[key].loads(data)
         return data
 
+class SerializerHalt(JSBASE):
+    
+    def __init__(self):
+        JSBASE.__init__(self)
+
+    def dump(self, filepath, obj):
+        raise RuntimeError("should not come here")
+
+    def load(self, path):
+        raise RuntimeError("should not come here")
+
+    def dumps(self, val):
+        raise RuntimeError("should not come here")
+
+    def loads(self, data):
+        raise RuntimeError("should not come here")

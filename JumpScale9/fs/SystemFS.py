@@ -208,14 +208,18 @@ class SystemFS(JSBASE):
                         elif self.isLink(dstname):
                             self.unlink(dstname)
 
-                    if keepsymlinks and self.isLink(srcname):
+                    if self.isLink(srcname):
                         linkto = self.readLink(srcname)
-                        self.symlink(linkto, dstname, overwriteFiles)
-                    elif self.isDir(srcname):
+                        if keepsymlinks:
+                            self.symlink(linkto, dstname, overwriteFiles)
+                            continue
+                        else:
+                            srcname = linkto
+                    if self.isDir(srcname):
                         # print "1:%s %s"%(srcname,dstname)
                         self.copyDirTree(srcname, dstname, keepsymlinks, deletefirst,
                                          overwriteFiles=overwriteFiles)
-                    else:
+                    if self.isFile(srcname):
                         # print "2:%s %s"%(srcname,dstname)
                         self.copyFile(
                             srcname, dstname, createDirIfNeeded=False, overwriteFile=overwriteFiles)
@@ -1285,12 +1289,16 @@ class SystemFS(JSBASE):
         files = sorted(self.walk(folder, recurse=1))
         return self.md5sum(files)
 
-    def getTmpDirPath(self, create=True):
+    def getTmpDirPath(self, name="",create=True):
         """
         create a tmp dir name and makes sure the dir exists
         """
-        tmpdir = self.joinPaths(
-            j.dirs.TMPDIR, j.data.idgenerator.generateXCharID(10))
+        if name:
+            tmpdir = self.joinPaths(
+                j.dirs.TMPDIR, name)
+        else:
+            tmpdir = self.joinPaths(
+                j.dirs.TMPDIR, j.data.idgenerator.generateXCharID(10))
         if create is True:
             self.createDir(tmpdir)
         return tmpdir

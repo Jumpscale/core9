@@ -75,6 +75,7 @@ class SSHKey(JSConfigBase):
     def pubkey(self, val):
         self.config._data["pubkey"] = str(val)
         self.config.save()
+        self._pubkey = None
 
     @property
     def privkey(self):
@@ -89,6 +90,7 @@ class SSHKey(JSConfigBase):
     def privkey(self, val):
         self.config.data = {"privkey_": str(val)}
         self.config.save()
+        self._pubkey = None
 
     @property
     def passphrase(self):

@@ -2,6 +2,7 @@ from js9 import j
 
 
 from JumpScale9.data.serializers.SerializerBase import SerializerBase
+from JumpScale9.data.serializers.SerializerBase import SerializerHalt
 from JumpScale9.data.serializers.SerializerInt import SerializerInt
 from JumpScale9.data.serializers.SerializerTime import SerializerTime
 from JumpScale9.data.serializers.SerializerBase64 import SerializerBase64
@@ -13,13 +14,13 @@ try:
     from JumpScale9.data.serializers.SerializerBlowfish import SerializerBlowfish
 except Exception as e:
     # print("could not load serializer: SerializerBlowfish")
-    SerializerBlowfish = SerializerBase
+    SerializerBlowfish = SerializerHalt
 
 try:
     from JumpScale9.data.serializers.SerializerUJson import SerializerUJson
 except Exception as e:
     # print("could not load serializer: SerializerUJson")
-    SerializerUJson = SerializerBase
+    SerializerUJson = SerializerHalt
 
 from JumpScale9.data.serializers.SerializerYAML import SerializerYAML
 
@@ -27,31 +28,31 @@ try:
     from JumpScale9.data.serializers.SerializerBlosc import SerializerBlosc
 except Exception as e:
     # print("could not load serializer: SerializerBlosc")
-    SerializerBlosc = SerializerBase
+    SerializerBlosc = SerializerHalt
 
 try:
     from JumpScale9.data.serializers.SerializerCRC import SerializerCRC
 except Exception as e:
     # print("could not load serializer: SerializerCRC")
-    SerializerCRC = SerializerBase
+    SerializerCRC = SerializerHalt
 
 try:
     from JumpScale9.data.serializers.SerializerLZMA import SerializerLZMA
 except Exception as e:
     # print("could not load serializer: SerializerLZMA")
-    SerializerLZMA = SerializerBase
+    SerializerLZMA = SerializerHalt
 
 try:
     from JumpScale9.data.serializers.SerializerMSGPack import SerializerMSGPack
 except Exception as e:
     # print("could not load serializer: SerializerMSGPack")
-    SerializerMSGPack = SerializerBase
+    SerializerMSGPack = SerializerHalt
 
 try:
     from JumpScale9.data.serializers.SerializerSnappy import SerializerSnappy
 except Exception as e:
     # print("could not load serializer: SerializerSnappy")
-    SerializerSnappy = SerializerBase
+    SerializerSnappy = SerializerHalt
 
 from JumpScale9.data.serializers.SerializerTOML import SerializerTOML
 
@@ -199,28 +200,28 @@ class SerializersFactory(JSBASE):
         return res
 
 
-class Serializer(JSBASE):
+# class Serializer(JSBASE):
 
-    def __init__(self, serializationstr, key=""):
-        JSBASE.__init__(self)
-        self.serializationstr = serializationstr
-        self.key = key
-        for k in self.serializationstr:
-            j.data.serializer.getSerializerType(k, self.key)
+#     def __init__(self, serializationstr, key=""):
+#         JSBASE.__init__(self)
+#         self.serializationstr = serializationstr
+#         self.key = key
+#         for k in self.serializationstr:
+#             j.data.serializer.getSerializerType(k, self.key)
 
-    def dumps(self, val):
-        if self.serializationstr == "":
-            return val
-        for key in self.serializationstr:
-            # print "dumps:%s"%key
-            val = j.data.serializer.types[key].dumps(val)
-        return val
+#     def dumps(self, val):
+#         if self.serializationstr == "":
+#             return val
+#         for key in self.serializationstr:
+#             # print "dumps:%s"%key
+#             val = j.data.serializer.types[key].dumps(val)
+#         return val
 
-    def loads(self, data):
-        if self.serializationstr == "":
-            return data
+#     def loads(self, data):
+#         if self.serializationstr == "":
+#             return data
 
-        for key in reversed(self.serializationstr):
-            # print "loads:%s"%key
-            data = j.data.serializer.types[key].loads(data)
-        return data
+#         for key in reversed(self.serializationstr):
+#             # print "loads:%s"%key
+#             data = j.data.serializer.types[key].loads(data)
+#         return data

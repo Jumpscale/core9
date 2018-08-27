@@ -6,6 +6,7 @@ import socket
 import textwrap
 import unicodedata
 import math
+from unidecode import unidecode
 matchquote = re.compile(r'\'[^\']*\'')
 matchlist = re.compile(r'\[[^\']*\]')
 re_nondigit = re.compile(r'\D')
@@ -30,11 +31,36 @@ class Text(JSBASE):
         self.__jslocation__ = "j.data.text"
         JSBASE.__init__(self)
 
-    def decodeUnicode2Asci(self, text):
+    def unicodedata(self, text):
         return unicodedata.normalize('NFKD', text.decode("utf-8")).encode('ascii', 'ignore')
 
-    def toolStripNonAsciFromText(self, text):
+    def strip_to_ascii(self, text):
         return "".join([char for char in str(text) if ((ord(char) > 31 and ord(char) < 127) or ord(char) == 10)])
+
+    def strip_to_ascii_dense(self, text):
+        text=unidecode(text)
+        text=self.strip_to_ascii(text)
+        text=text.replace("_","-")
+        text=text.replace(" ","-")
+        text=text.replace(".","-")
+        text=text.replace(":","-")
+        text=text.replace(";","-")
+        text=text.lower()
+        def check(char):
+            charnr = ord(char)
+            if charnr==45:
+                return True
+            if charnr>47 and charnr<58:
+                return True
+            if charnr>96 and charnr<123:
+                return True
+            return False
+
+        text =  "".join([char for char in str(text) if check(char)])
+        while "--" in text:
+            text = text.replace("--","-")
+        return text
+
 
     def pad(self, text, length):
         while len(text) < length:

@@ -12,9 +12,9 @@ class Config(JSBASE):
 
         JSBASE.__init__(self)
 
-        self.location = location
-        self.instance = instance
-        self.error = False #if this is true then need to call the configure part
+        self.location = j.data.text.toStr(location)
+        self.instance = j.data.text.toStr(instance)
+        self.error = False # if this is true then need to call the configure part
         self._template = template
         if not j.data.types.string.check(template):
             if template is not None:
@@ -60,7 +60,7 @@ class Config(JSBASE):
     def path(self):
         self.logger.debug("init getpath:%s" % self._path)
         if not self._path:
-            self._path = j.sal.fs.joinPaths(j.tools.configmanager.path, self.location, self.instance + '.toml')
+            self._path = j.sal.fs.joinPaths(j.data.text.toStr(j.tools.configmanager.path), self.location, self.instance + '.toml')
             self.logger.debug("getpath:%s" % self._path)
         return self._path
 
